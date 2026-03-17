@@ -1,0 +1,86 @@
+import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import { User, IUser } from '../models/userModel';
+import { config } from '../config/config';
+import { AppError } from '../utils/appError';
+import { logger } from '../utils/logger';
+
+// Extend Express Request interface to include user
+declare global {
+  namespace Express {
+    interface Request {
+      user?: IUser;
+    }
+  }
+}
+
+interface DecodedToken {
+  user: IUser;
+  iat: number;
+  exp: number;
+}
+
+export const protect = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    let token;
+
+    // Check if token exists in Authorization header
+    if (
+      req.headers.authorization &&
+      req.headers.authorization.startsWith('Bearer')
+    ) {
+      // Get token from header
+      token = req.headers.authorization.split(' ')[1];
+    }
+    
+    // Check if token exists
+    if (!token) {
+      throw new AppError('Not authorized to access this route', 401);
+    }
+
+    try {
+      // Verify token
+      const decoded = jwt.verify(
+        token,
+        config.jwt.secret
+      ) as DecodedToken;
+
+      // // Get user from the token
+      const user = await User.findById(decoded.user._id);
+
+      if (!user) {
+        throw new AppError('User not found', 401);
+      }
+
+      // // Set user to req.user
+      req.user = user;
+      next();
+    } catch (error) {
+      logger.error('JWT verification failed', { error });
+      throw new AppError('Not authorized, token failed', 401);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Grant access to specific roles
+export const authorize = (...roles: string[]) => {
+  return (req: Request, res: Response, next: NextFunction): void => {
+    if (!req.user) {
+      next(new AppError('User not found in request', 500));
+      return;
+    }
+
+    if (!roles.includes(req.user.subscription)) {
+      next(new AppError(`User role ${req.user.subscription} is not authorized to access this route`, 403));
+      return;
+    }
+
+    next();
+  };
+};
