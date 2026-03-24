@@ -82,7 +82,7 @@ router.post('/',
  *       200:
  *         description: List of vacations
  */
-router.get('/:webConfigId', protect, validateRequest(getVacationsByWebConfigIdSchema), getVacationsByWebConfigId);
+router.get('/:webConfigId', validateRequest(getVacationsByWebConfigIdSchema), getVacationsByWebConfigId);
 
 /**
  * @swagger

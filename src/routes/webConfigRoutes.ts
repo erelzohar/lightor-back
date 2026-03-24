@@ -120,8 +120,8 @@ router.post(
  */
 router.get(
   '/',
-  protect,
-  authorize('premium','admin','client'),
+  // protect,
+  // authorize('premium','admin','client'),
   validateRequest(queryWebConfigsSchema),
   getWebConfigs
 );
@@ -173,7 +173,7 @@ router.get(
  */
 router.get(
   '/subdomain/:subdomain',
-  protect,
+  //protect,
   validateRequest(getWebConfigBySubdomainSchema),
   getWebConfigBySubdomain
 );

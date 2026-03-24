@@ -24,7 +24,26 @@ import { vacationRoutes } from './routes/vacationsRoutes';
 
 const app = express();
 app.set('trust proxy', 1);
+// const corsOptions = {
+//   origin: function (origin, callback) {
+//     // If there is no origin (e.g., a direct server-to-server request), decide if you want to allow it.
+//     // For strict security against browsers, we focus on the origin string.
+    
+//     // Allow the dashboard
+//     if (origin === 'https://dashboard.lightor.app') {
+//       return callback(null, true);
+//     }
+    
+//     // Allow ANY subdomain of lightor.app (e.g., https://jhon.lightor.app, https://erelos.lightor.app)
+//     if (origin && origin.endsWith('.lightor.app')) {
+//       return callback(null, true);
+//     }
 
+//     // Reject everything else
+//     callback(new Error('Blocked by CORS policy'));
+//   },
+//   credentials: true // Important if you are sending cookies or authorization headers
+// };
 // Connect to MongoDB
 connectDB();
 

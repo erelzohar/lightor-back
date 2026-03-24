@@ -53,7 +53,7 @@ const router = express.Router();
  *         description: Server error
  */
 router.post('/sms',
-  protect,
+  // protect,
   validateRequest(sendSMSSchema),
   sendSMS);
 
@@ -163,7 +163,7 @@ router.post('/whatsapp/template', protect, validateRequest(sendWhatsAppTemplateS
  *       429:
  *         description: Rate limit exceeded (Cooldown active)
  */
-router.post('/otp/send', validateRequest(sendOTPSchema), protect, sendOTP);
+router.post('/otp/send', validateRequest(sendOTPSchema), sendOTP);
 
 /**
  * @swagger
@@ -195,7 +195,7 @@ router.post('/otp/send', validateRequest(sendOTPSchema), protect, sendOTP);
  *       403:
  *         description: Too many failed attempts
  */
-router.post('/otp/verify', protect, validateRequest(verifyOTPSchema), verifyOTPCode);
+router.post('/otp/verify', validateRequest(verifyOTPSchema), verifyOTPCode);
 
 /**
  * @swagger
@@ -228,7 +228,7 @@ router.post('/otp/verify', protect, validateRequest(verifyOTPSchema), verifyOTPC
  *       400:
  *         description: Invalid parameters
  */
-router.post('/email', protect, validateRequest(sendEmailSchema), sendEmail);
+router.post('/email', validateRequest(sendEmailSchema), sendEmail);
 
 /**
  * @swagger
@@ -257,6 +257,6 @@ router.post('/email', protect, validateRequest(sendEmailSchema), sendEmail);
  *       200:
  *         description: Error reported successfully
  */
-router.post('/report-error', protect, validateRequest(reportErrorSchema), reportError);
+router.post('/report-error', validateRequest(reportErrorSchema), reportError);
 
 export { router as messagingRoutes };
