@@ -5,7 +5,7 @@ dotenv.config();
 
 const MONGO_USERNAME = process.env.MONGO_USERNAME || '';
 const MONGO_PASSWORD = process.env.MONGO_PASSWORD || '';
-const MONGO_URL = `mongodb+srv://${MONGO_USERNAME}:${MONGO_PASSWORD}@cluster0.lytkt.mongodb.net/EZ-linesV2${process.env.NODE_ENV !== 'production' ? '-test' : ''}`;
+const MONGO_URL = `mongodb+srv://${MONGO_USERNAME}:${MONGO_PASSWORD}@cluster0.lytkt.mongodb.net/Lightor${process.env.NODE_ENV !== 'production' ? '-test' : ''}`;
 const JWT_SECRET = process.env.JWT_SECRET || '';
 const JWT_EXPIRATION = process.env.JWT_EXPIRATION || '7d';
 const S3_BUCKET = process.env.S3_BUCKET || '';
