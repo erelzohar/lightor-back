@@ -94,7 +94,8 @@ export const createAppointment = async (
   const TIMEOUT_MS = 10000; // 10 seconds
 
   try {
-
+    console.log("start");
+    
     //      Validate user_id
     const user = await User.findById(req.body.user_id);
     if (!user) {
@@ -146,7 +147,8 @@ export const createAppointment = async (
     //   success: false,
     //   message: message,
     // });
-
+    console.log(error);
+    
     next(error);
   }
 };
