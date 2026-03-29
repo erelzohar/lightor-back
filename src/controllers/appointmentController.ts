@@ -21,61 +21,6 @@ import {
   QueryAppointmentsInput
 } from '../dto/appointmentDto';
 
-// Create appointment
-// export const createAppointment = async (
-//   req: Request,
-//   res: Response,
-//   next: NextFunction
-// ): Promise<void> => {
-//   try {
-//     const appointmentData: CreateAppointmentInput = req.body as CreateAppointmentInput;
-//     // Validate user_id
-//     const user = await User.findById(appointmentData.user_id);
-//     if (!user) {
-//       throw new AppError('User not found', 404);
-//     }
-
-//     // Validate appointment type
-//     const appointmentType = await AppointmentType.findById(appointmentData.type_id);
-//     if (!appointmentType) {
-//       throw new AppError('Appointment type not found', 404);
-//     }
-
-//     // Check for appointment conflicts
-//     const conflictingAppointment = await Appointment.findOne({
-//       user_id: appointmentData.user_id,
-//       status:"scheduled",
-//       timestamp: appointmentData.timestamp
-//     });
-
-//     if (conflictingAppointment) {
-//       throw new AppError('Appointment time conflicts with an existing appointment', 400);
-//     }
-
-//     // Create appointment
-//     const appointment = await Appointment.create(appointmentData);
-
-//     // Populate appointment type details
-//     const populatedAppointment = await appointment.populate('type');
-//     delete populatedAppointment.type_id;
-//     // Send confirmation email if user has email
-//     // if (user.email) {
-//     //   try {
-//     //     await sendAppointmentConfirmation(populatedAppointment, user);
-//     //   } catch (error) {
-//     // console.log(error)
-//     //     logger.error(`Failed to send appointment confirmation email: ${error}`);
-//     //   }
-//     // }
-
-//     res.status(201).json({
-//       success: true,
-//       data: populatedAppointment,
-//     });
-//   } catch (error) {
-//     next(error);
-//   }
-// };
 
 interface JobResult {
   success: boolean;
@@ -93,9 +38,7 @@ export const createAppointment = async (
   const jobName = 'createAppointment';
   const TIMEOUT_MS = 10000; // 10 seconds
 
-  try {
-    console.log("start");
-    
+  try {    
     //      Validate user_id
     const user = await User.findById(req.body.user_id);
     if (!user) {
@@ -146,9 +89,7 @@ export const createAppointment = async (
     // res.status(statusCode).json({
     //   success: false,
     //   message: message,
-    // });
-    console.log(error);
-    
+    // });    
     next(error);
   }
 };
