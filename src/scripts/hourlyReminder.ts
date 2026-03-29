@@ -83,7 +83,7 @@ async function hourlyReminder() {
         timeZone: 'Asia/Jerusalem'
       });
 
-      const message = `היי ${appt.name}, \nזוהי תזכורת לתור שלך בשעה ${timeString} אצל ${appt.businessName || 'EZ-Lines'}.\nלביטול או עדכון: ${appt.subDomain}.ez-lines.com/cancel/${appt._id}`;
+      const message = `היי ${appt.name}, \nזוהי תזכורת לתור שלך בשעה ${timeString} אצל ${appt.businessName || 'Lightor'}.\nלביטול או עדכון: ${appt.subDomain}.lightor.app/cancel/${appt._id}`;
 
       try {
         const response = await fetch(smsApiUrl, {
@@ -95,7 +95,7 @@ async function hourlyReminder() {
           body: JSON.stringify({
             sms: {
               user: { username: config.smsService.newUser },
-              source: "EZ-Lines",
+              source: "Lightor",
               destinations: { phone: appt.phone },
               message
             }

@@ -94,7 +94,7 @@ export const sendSMS = async (
           user: {
             username: config.smsService.newUser
           },
-          source: "EZ-Lines",
+          source: "Lightor",
           destinations: {
             phone: to
           },
@@ -165,7 +165,7 @@ export const sendOTP = async (req: Request, res: Response, next: NextFunction): 
             user: {
               username: config.smsService.newUser
             },
-            source: "EZ-Lines",
+            source: "Lightor",
             destinations: {
               phone: phoneNumber
             },

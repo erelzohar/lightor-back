@@ -78,7 +78,7 @@ async function morningReminder() {
         timeZone: 'Asia/Jerusalem'
       });
 
-      const message = `בוקר טוב ${appt.name}, \nזוהי תזכורת לתור שלך היום בשעה ${timeString} אצל ${appt.businessName || 'EZ-Lines'}.\nלביטול או עדכון: ${appt.subDomain}.ez-lines.com/cancel/${appt._id}`;
+      const message = `בוקר טוב ${appt.name}, \nזוהי תזכורת לתור שלך היום בשעה ${timeString} אצל ${appt.businessName || 'Lightor'}.\nלביטול או עדכון: ${appt.subDomain}.lightor.app/cancel/${appt._id}`;
 
       try {
         const response = await fetch(smsApiUrl, {
@@ -90,7 +90,7 @@ async function morningReminder() {
           body: JSON.stringify({
             sms: {
               user: { username: config.smsService.newUser },
-              source: "EZ-Lines",
+              source: "Lightor",
               destinations: { phone: appt.phone },
               message
             }

@@ -26,8 +26,8 @@ export const reportServerError = async (error: Error, req?: Request) => {
     `;
 
     await resend.emails.send({
-      from: `"EZ Lines SERVER ERROR" <${config.email.from}>`,
-      to: 'ezwebsisr@gmail.com',
+      from: `"Lightor SERVER ERROR" <${config.email.from}>`,
+      to: 'lightorapp@gmail.com',
       subject: `[SERVER ERROR] ${req.originalUrl}`,
       html,
     });
@@ -79,8 +79,8 @@ export const reportFrontendError = async (report: ReportErrorInput) => {
     `;
 
     await resend.emails.send({
-      from: `"EZ Lines FRONTEND ERROR" <${config.email.from}>`,
-      to: 'ezwebsisr@gmail.com',
+      from: `"Lightor FRONTEND ERROR" <${config.email.from}>`,
+      to: 'lightorapp@gmail.com',
       subject: `[FRONTEND ERROR] ${error.replace(/\n/g, ' ').substring(0, 50)}`,
       html,
     });
@@ -95,7 +95,7 @@ export const reportFrontendError = async (report: ReportErrorInput) => {
 export const sendGeneralEmail = async (to: string, subject: string, html: string) => {
   try {
     await resend.emails.send({
-      from: `"EZ Lines" <${config.email.from}>`,
+      from: `"Lightor" <${config.email.from}>`,
       to,
       subject,
       html,
