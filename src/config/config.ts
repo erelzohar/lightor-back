@@ -10,8 +10,8 @@ const JWT_SECRET = process.env.JWT_SECRET || '';
 const JWT_EXPIRATION = process.env.JWT_EXPIRATION || '7d';
 const S3_BUCKET = process.env.S3_BUCKET || '';
 const BUCKET_REGION = process.env.BUCKET_REGION || '';
-const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY || '';
-const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID || '';
+// const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY || '';
+// const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID || '';
 const PORT = parseInt(process.env.PORT || '3000', 10);
 const SMS_USER = process.env.SMS_USER || '';
 const SMS_KEY = process.env.SMS_KEY || '';
@@ -78,8 +78,8 @@ export const config = {
   aws: {
     bucketName: S3_BUCKET,
     region: BUCKET_REGION,
-    secret: AWS_SECRET_ACCESS_KEY,
-    accessKey: AWS_ACCESS_KEY_ID
+    // secret: AWS_SECRET_ACCESS_KEY,
+    // accessKey: AWS_ACCESS_KEY_ID
   },
   redis: {
     host: REDIS_HOST,

@@ -234,10 +234,10 @@ export const updateWebConfig = async (
         Key: webConfig.logoImageName
       });
       const s3 = new S3Client({
-        credentials: {
-          accessKeyId: config.aws.accessKey,
-          secretAccessKey: config.aws.secret
-        },
+        // credentials: {
+        //   accessKeyId: config.aws.accessKey,
+        //   secretAccessKey: config.aws.secret
+        // },
         region: config.aws.region
       });
       await s3.send(command);
