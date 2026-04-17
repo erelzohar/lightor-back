@@ -5,11 +5,14 @@ dotenv.config();
 
 const MONGO_USERNAME = process.env.MONGO_USERNAME || '';
 const MONGO_PASSWORD = process.env.MONGO_PASSWORD || '';
-const MONGO_URL = `mongodb+srv://${MONGO_USERNAME}:${MONGO_PASSWORD}@cluster0.lytkt.mongodb.net/Lightor${process.env.NODE_ENV !== 'production' ? '-test' : ''}`;
+const CLIENT_USER = process.env.CLIENT_USER || '';
+const CLIENT_PASS = process.env.CLIENT_PASS || '';  
+const MONGO_URL = `mongodb+srv://${MONGO_USERNAME}:${MONGO_PASSWORD}@cluster2.btio2te.mongodb.net/Lightor${process.env.NODE_ENV !== 'production' ? '-test' : ''}`;
 const JWT_SECRET = process.env.JWT_SECRET || '';
 const JWT_EXPIRATION = process.env.JWT_EXPIRATION || '7d';
 const S3_BUCKET = process.env.S3_BUCKET || '';
 const BUCKET_REGION = process.env.BUCKET_REGION || '';
+const TURNSTILE_SECRET_KEY = process.env.TURNSTILE_SECRET_KEY || '';
 // const AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY || '';
 // const AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID || '';
 const PORT = parseInt(process.env.PORT || '3000', 10);
@@ -70,6 +73,13 @@ export const config = {
   server: {
     port: PORT,
     nodeEnv: NODE_ENV
+  },
+  client: {
+    user: CLIENT_USER,
+    pass: CLIENT_PASS
+  },
+  cloudflare: {
+    secretKey: TURNSTILE_SECRET_KEY
   },
   jwt: {
     secret: JWT_SECRET,
