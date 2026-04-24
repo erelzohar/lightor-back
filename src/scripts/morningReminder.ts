@@ -9,9 +9,7 @@ async function morningReminder() {
   try {
     await connectDB();
 
-    // 1. Precise Israel Time Window (Handles UTC/Heroku offsets automatically)
-    const nowIsrael = new Date().toLocaleString("en-US", { timeZone: "Asia/Jerusalem" });
-    const today = new Date(nowIsrael);
+    const today = new Date();
     const startOfDay = new Date(today.setHours(0, 0, 0, 0)).getTime();
     const endOfDay = new Date(today.setHours(23, 59, 59, 999)).getTime();
 
@@ -78,7 +76,7 @@ async function morningReminder() {
         timeZone: 'Asia/Jerusalem'
       });
 
-      const message = `בוקר טוב ${appt.name}, \nזוהי תזכורת לתור שלך היום בשעה ${timeString} אצל ${appt.businessName || 'Lightor'}.\nלביטול או עדכון: ${appt.subDomain}.lightor.app/cancel/${appt._id}`;
+      const message = `בוקר טוב ${appt.name}, \nזוהי תזכורת לתור שלך היום בשעה ${timeString} אצל ${appt.businessName || 'EZ-Lines'}.\nלביטול או עדכון: ${appt.subDomain}.ez-lines.com/manage/${appt._id}`;
 
       try {
         const response = await fetch(smsApiUrl, {
@@ -90,7 +88,7 @@ async function morningReminder() {
           body: JSON.stringify({
             sms: {
               user: { username: config.smsService.newUser },
-              source: "Lightor",
+              source: "EZ-Lines",
               destinations: { phone: appt.phone },
               message
             }

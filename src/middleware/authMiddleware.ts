@@ -28,15 +28,18 @@ export const protect = async (
   try {
     let token;
 
-    // Check if token exists in Authorization header
-    if (
+    // 1. Check if token exists in Cookies (Priority for Web)
+    if (req.cookies && req.cookies.a_t) {
+      token = req.cookies.a_t;
+    }
+    // 2. Fallback: Check if token exists in Authorization header
+    else if (
       req.headers.authorization &&
       req.headers.authorization.startsWith('Bearer')
     ) {
-      // Get token from header
       token = req.headers.authorization.split(' ')[1];
     }
-    
+
     // Check if token exists
     if (!token) {
       throw new AppError('Not authorized to access this route', 401);
@@ -47,16 +50,17 @@ export const protect = async (
       const decoded = jwt.verify(
         token,
         config.jwt.secret
-      ) as DecodedToken;
+      ) as any; // Cast as any or your DecodedToken interface
 
-      // // Get user from the token
-      const user = await User.findById(decoded.user._id);
+      // Get user from the token
+      // Note: Ensure your generateToken puts the ID in the 'user' or 'id' field
+      const userId = decoded.user?._id || decoded.id;
+      const user = await User.findById(userId);
 
       if (!user) {
         throw new AppError('User not found', 401);
       }
 
-      // // Set user to req.user
       req.user = user;
       next();
     } catch (error) {

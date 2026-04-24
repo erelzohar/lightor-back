@@ -7,6 +7,7 @@ import {
   forgotPassword,
   resetPassword,
   logout,
+  handshakeRoute,
 } from '../controllers/authController';
 import { protect } from '../middleware/authMiddleware';
 import { validateRequest } from '../middleware/validateRequest';
@@ -19,6 +20,9 @@ import {
 } from '../dto/userDto';
 
 const router = express.Router();
+
+//client handshake route
+router.post('/handshake', handshakeRoute);
 
 /**
  * @swagger

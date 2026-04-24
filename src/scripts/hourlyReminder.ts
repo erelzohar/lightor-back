@@ -9,9 +9,8 @@ async function hourlyReminder() {
   try {
     await connectDB();
 
-    // 1. Get current time in Israel
-    const nowIsrael = new Date().toLocaleString("en-US", { timeZone: "Asia/Jerusalem" });
-    const today = new Date(nowIsrael);
+    // 1. Get exact current absolute time
+    const today = new Date();
 
     // Calculate window for the NEXT hour
     // Example: If it's 10:15 AM now, we want 11:00 AM to 11:59 PM
@@ -83,7 +82,7 @@ async function hourlyReminder() {
         timeZone: 'Asia/Jerusalem'
       });
 
-      const message = `היי ${appt.name}, \nזוהי תזכורת לתור שלך בשעה ${timeString} אצל ${appt.businessName || 'Lightor'}.\nלביטול או עדכון: ${appt.subDomain}.lightor.app/cancel/${appt._id}`;
+      const message = `היי ${appt.name}, \nזוהי תזכורת לתור שלך בשעה ${timeString} אצל ${appt.businessName || 'EZ-Lines'}.\nלביטול או עדכון: ${appt.subDomain}.ez-lines.com/manage/${appt._id}`;
 
       try {
         const response = await fetch(smsApiUrl, {
@@ -95,7 +94,7 @@ async function hourlyReminder() {
           body: JSON.stringify({
             sms: {
               user: { username: config.smsService.newUser },
-              source: "Lightor",
+              source: "EZ-Lines",
               destinations: { phone: appt.phone },
               message
             }

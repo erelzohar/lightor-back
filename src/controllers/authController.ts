@@ -17,7 +17,71 @@ import {
 // Generate JWT token
 const generateToken = (user: IUser, staySignedIn: boolean = false): string => {
   return staySignedIn ? jwt.sign({ user }, config.jwt.secret, { expiresIn: "180d" })
-    : jwt.sign({ user }, config.jwt.secret)
+    : jwt.sign({ user }, config.jwt.secret, { expiresIn: "30m" })
+};
+
+export const handshakeRoute = async (req: Request, res: Response): Promise<void> => {
+  const { turnstileToken } = req.body;
+  const clientIp = req.headers['cf-connecting-ip'] || req.ip;
+
+  if (!turnstileToken) {
+    res.status(400).json({ success: false, error: 'Verification token required' });
+    return;
+  }
+
+  try {
+    // if (config.server.nodeEnv === 'production') {
+    // 1. Verify the Turnstile token with Cloudflare
+    const formData = new URLSearchParams();
+    formData.append('secret', config.cloudflare.secretKey);
+    formData.append('response', turnstileToken);
+    formData.append('remoteip', clientIp as string);
+
+    const cloudflareRes = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+      method: 'POST',
+      body: formData,
+    });
+
+    const outcome = await cloudflareRes.json();
+    console.log(outcome);
+
+    // 2. Reject if Cloudflare says it's a bot or invalid token
+    if (!(outcome as any).success) {
+      res.status(403).json({ success: false, error: 'Automated behavior detected' });
+      return;
+    }
+    // }
+
+    const username = config.client.user;
+    const password = config.client.pass;
+    // 3. Success! The request is from a real browser on your domain. Issue the JWT.
+    const user = await User.findOne({ username }).select('+password');
+
+    if (!user) {
+      throw new AppError('Invalid credentials', 401);
+    }
+
+    // Check if password matches
+    const isMatch = await user.matchPassword(password);
+
+    if (!isMatch) {
+      throw new AppError('Invalid credentials', 401);
+    }
+
+    // Generate token
+    const token = generateToken(user);
+    res.cookie('a_t', token, { //auth_token
+      httpOnly: true,     // Protects from JavaScript "fishing"
+      secure: true,       // Ensures it only sends over HTTPS (Cloudflare handles this)
+      sameSite: 'none',   // Required for cross-subdomain (dashboard.lightor.app)
+      maxAge: 1000 * 60 * 30, // 30 mins
+      path: '/',          // Available for all your API routes
+    });
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Handshake error:', error);
+    res.status(500).json({ success: false, error: 'Internal server error' });
+  }
 };
 
 // Register user

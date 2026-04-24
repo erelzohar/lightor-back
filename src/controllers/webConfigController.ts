@@ -143,8 +143,10 @@ export const checkSubdomainAvailability = async (
 ): Promise<void> => {
   try {
     const { subdomain } = req.params;
+console.log(subdomain);
 
     const existingConfig = await WebConfig.findOne({ subDomain: subdomain });
+    console.log(existingConfig);
 
     res.status(200).json({
       success: true,

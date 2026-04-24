@@ -158,7 +158,7 @@ export interface IWebConfig extends Document {
   logoImageName: string;
   subDomain: string;
   minCancelTimeMS: number;
-  minsPerSlot: number;
+  // minsPerSlot: number;
   defaultLanguage: string;
   vacations: mongoose.Types.ObjectId[];
   appointmentTypes: mongoose.Types.ObjectId[];
@@ -336,11 +336,11 @@ const webConfigSchema = new Schema<IWebConfig>(
       required: [true, 'Please add minimum cancellation time in milliseconds'],
       default: 3600000 // 1 hour in milliseconds
     },
-    minsPerSlot: {
-      type: Number,
-      required: [true, 'Please add mins per slot in minutes'],
-      default: 20 // 1 hour in milliseconds
-    },
+    // minsPerSlot: {
+    //   type: Number,
+    //   required: [true, 'Please add mins per slot in minutes'],
+    //   default: 20 // 1 hour in milliseconds
+    // },
     defaultLanguage: {
       type: String,
       enum: ['en', 'he', 'ar', 'fr', 'es'],

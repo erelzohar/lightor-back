@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import cookieParser from 'cookie-parser';
 import { rateLimit } from 'express-rate-limit';
 import swaggerUi from 'swagger-ui-express';
 import swaggerJsdoc from 'swagger-jsdoc';
@@ -23,34 +24,38 @@ import { imageRoutes } from './routes/imageRoutes';
 import { vacationRoutes } from './routes/vacationsRoutes';
 
 const app = express();
-app.set('trust proxy', 1);
-// const corsOptions = {
-//   origin: function (origin, callback) {
-//     // If there is no origin (e.g., a direct server-to-server request), decide if you want to allow it.
-//     // For strict security against browsers, we focus on the origin string.
-    
-//     // Allow the dashboard
-//     if (origin === 'https://dashboard.lightor.app') {
-//       return callback(null, true);
-//     }
-    
-//     // Allow ANY subdomain of lightor.app (e.g., https://jhon.lightor.app, https://erelos.lightor.app)
-//     if (origin && origin.endsWith('.lightor.app')) {
-//       return callback(null, true);
-//     }
 
-//     // Reject everything else
-//     callback(new Error('Blocked by CORS policy'));
-//   },
-//   credentials: true // Important if you are sending cookies or authorization headers
-// };
+app.set('trust proxy', 1);
+
+const corsOptions = {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    
+    if (config.server.nodeEnv === 'development') return callback(null, true);
+    
+    // Block requests without an origin (like Postman by default)
+    if (!origin) {
+      return callback(new Error('Origin required'));
+    }
+
+    // Allow the dashboard explicitly, or any valid client subdomain
+    const isAllowed = origin.endsWith('.lightor.app');
+
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true, // Required if you plan to send cookies later
+};
 // Connect to MongoDB
 connectDB();
 
 // Middleware
 app.use(express.json());
+app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(cors(corsOptions));
 app.use(helmet());
 app.use(fileUpload());
 
@@ -65,7 +70,7 @@ app.use(limiter);
 
 // Swagger documentation
 const specs = swaggerJsdoc(swaggerOptions);
-if (process.env.NODE_ENV !== 'production') {
+if (config.server.nodeEnv !== 'production') {
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs));
 }
 

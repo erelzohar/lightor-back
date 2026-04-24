@@ -62,7 +62,7 @@ const router = express.Router();
  */
 router.post(
   '/',
-  //protect,
+  protect,
   validateRequest(createAppointmentSchema),
   createAppointment
 );
@@ -120,7 +120,7 @@ router.post(
  */
 router.get(
   '/',
-  // protect,
+  protect,
   validateRequest(queryAppointmentsSchema),
   getAppointments
 );
@@ -147,9 +147,9 @@ router.get(
  */
 router.get(
   '/:id',
-  // protect,
+  protect,
   validateRequest(getAppointmentByIdSchema),
-  getAppointmentById
+  getAppointmentById  
 );
 
 /**
@@ -198,7 +198,7 @@ router.get(
  */
 router.put(
   '/:id',
-  // protect,
+  protect, 
   validateRequest(updateAppointmentSchema),
   updateAppointment
 );

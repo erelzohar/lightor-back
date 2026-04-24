@@ -53,8 +53,6 @@ const router = express.Router();
  *                 type: string
  *               minCancelTimeMS:
  *                 type: number
- *               minsPerSlot:
- *                 type: number
  *               defaultLanguage:
  *                 type: string
  *                 enum: [en, he, ar, fr, es]
@@ -120,8 +118,8 @@ router.post(
  */
 router.get(
   '/',
-  // protect,
-  // authorize('premium','admin','client'),
+  protect,
+  //authorize('free', 'basic', 'premium', 'admin', 'client'),
   validateRequest(queryWebConfigsSchema),
   getWebConfigs
 );
@@ -173,7 +171,7 @@ router.get(
  */
 router.get(
   '/subdomain/:subdomain',
-  //protect,
+  protect,
   validateRequest(getWebConfigBySubdomainSchema),
   getWebConfigBySubdomain
 );
@@ -203,7 +201,7 @@ router.get(
  *                 available:
  *                   type: boolean
  */
-router.get('/check-subdomain/:subdomain', checkSubdomainAvailability);
+router.get('/check-subdomain/:subdomain',protect, checkSubdomainAvailability);
 
 /**
  * @swagger
@@ -233,8 +231,6 @@ router.get('/check-subdomain/:subdomain', checkSubdomainAvailability);
  *               subDomain:
  *                 type: string
  *               minCancelTimeMS:
- *                 type: number
- *               minsPerSlot:
  *                 type: number
  *               defaultLanguage:
  *                 type: string
