@@ -32,12 +32,10 @@ const corsOptions = {
     
     if (config.server.nodeEnv === 'development') return callback(null, true);
     
-    // Block requests without an origin (like Postman by default)
     if (!origin) {
-      return callback(new Error('Origin required'));
+      return callback(null, true);
     }
 
-    // Allow the dashboard explicitly, or any valid client subdomain
     const isAllowed = origin.endsWith('.lightor.app');
 
     if (isAllowed) {
