@@ -43,7 +43,6 @@ export const handshakeRoute = async (req: Request, res: Response): Promise<void>
     });
 
     const outcome = await cloudflareRes.json();
-    console.log(outcome);
 
     // 2. Reject if Cloudflare says it's a bot or invalid token
     if (!(outcome as any).success) {

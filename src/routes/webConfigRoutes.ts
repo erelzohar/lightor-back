@@ -171,7 +171,6 @@ router.get(
  */
 router.get(
   '/subdomain/:subdomain',
-  protect,
   validateRequest(getWebConfigBySubdomainSchema),
   getWebConfigBySubdomain
 );
