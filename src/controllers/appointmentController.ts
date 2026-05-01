@@ -273,7 +273,7 @@ export const updateAppointment = async (
     const updatedAppointment = await Appointment.findByIdAndUpdate(
       id,
       updateData,
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     )
       .populate('type')
     // .populate('user_id', 'name email phone');
@@ -309,8 +309,8 @@ export const deleteAppointment = async (
     }
 
     // Check if user is authorized to delete this appointment
-    if (user && user.subscription !== 'premium') {
-      if (!appointment.user_id.equals(user._id as string)) {
+    if (user) {
+      if (!appointment.user_id.equals(user._id)) {
         throw new AppError('Not authorized to delete this appointment', 403);
       }
     }
@@ -345,8 +345,8 @@ export const sendReminder = async (
     }
 
     // Check if user is authorized to send reminder for this appointment
-    if (user && user.subscription !== 'premium') {
-      if (!appointment.user_id.equals(user._id as string)) {
+    if (user) {
+      if (!appointment.user_id.equals(user._id)) {
         throw new AppError('Not authorized to send reminder for this appointment', 403);
       }
     }

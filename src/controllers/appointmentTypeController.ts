@@ -26,7 +26,7 @@ export const createAppointmentType = async (
 
     const appointmentType = await AppointmentType.create({
       ...req.body,
-      user_id: user._id
+      webConfig_id: user.webConfig_id
     });
 
     res.status(201).json({
@@ -123,7 +123,7 @@ export const updateAppointmentType = async (
     appointmentType = await AppointmentType.findByIdAndUpdate(
       id,
       req.body,
-      { new: true, runValidators: true }
+      { returnDocument: 'after', runValidators: true }
     );
 
     res.status(200).json({

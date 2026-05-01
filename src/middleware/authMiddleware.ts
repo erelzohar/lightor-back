@@ -80,8 +80,8 @@ export const authorize = (...roles: string[]) => {
       return;
     }
 
-    if (!roles.includes(req.user.subscription)) {
-      next(new AppError(`User role ${req.user.subscription} is not authorized to access this route`, 403));
+    if (!roles.includes(req.user.role)) {
+      next(new AppError(`User role ${req.user.role} is not authorized to access this route`, 403));
       return;
     }
 

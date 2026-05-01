@@ -5,7 +5,7 @@ import { User, IUser } from '../models/userModel';
 import { config } from '../config/config';
 import { AppError } from '../utils/appError';
 import { logger } from '../utils/logger';
-// import { sendPasswordReset } from '../utils/emailService';
+import { sendGeneralEmail } from '../utils/emailService';
 import {
   LoginUserInput,
   RegisterUserInput,
@@ -104,6 +104,10 @@ export const register = async (
       );
     }
 
+    // Generate verification token
+    const verificationToken = crypto.randomBytes(20).toString('hex');
+    const verificationExpire = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24 hours
+
     // Create user
     const user = await User.create({
       name: userData.name,
@@ -111,8 +115,31 @@ export const register = async (
       phone: userData.phone,
       username: userData.username,
       password: userData.password,
-      subscription: userData.subscription,
+      role: userData.role,
       defaultLanguage: userData.defaultLanguage,
+      isVerified: false,
+      verificationToken,
+      verificationExpire,
+    });
+
+    // Send verification email
+    const frontendUrl = process.env.CLIENT_URL || 'https://lightor.app';
+    const verifyUrl = `${frontendUrl}/verify?token=${verificationToken}`;
+    
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        <h2>Verify Your Email</h2>
+        <p>Thank you for registering. Please click the link below to verify your email address:</p>
+        <p><a href="${verifyUrl}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Verify Email</a></p>
+        <p>Or copy and paste this link in your browser:</p>
+        <p><a href="${verifyUrl}">${verifyUrl}</a></p>
+        <p>This link will expire in 24 hours.</p>
+      </div>
+    `;
+    
+    // We send email without blocking the response
+    sendGeneralEmail(user.email, 'Verify your email address', emailHtml).catch(err => {
+      logger.error(`Failed to send verification email to ${user.email}:`, err);
     });
 
     // Generate token
@@ -125,8 +152,10 @@ export const register = async (
       email: user.email,
       phone: user.phone,
       username: user.username,
+      role: user.role,
       subscription: user.subscription,
       defaultLanguage: user.defaultLanguage,
+      isVerified: user.isVerified,
     };
 
     res.status(201).json({
@@ -164,7 +193,7 @@ export const login = async (
 
     // Generate token
     const token = generateToken(user);
-
+    
     res.status(200).json({
       success: true,
       token,
@@ -174,8 +203,10 @@ export const login = async (
         email: user.email,
         phone: user.phone,
         username: user.username,
+        role: user.role,
         subscription: user.subscription,
         defaultLanguage: user.defaultLanguage,
+        isVerified: user.isVerified,
         webConfig_id: user.webConfig_id,
       },
     });
@@ -367,4 +398,36 @@ export const logout = (req: Request, res: Response): void => {
     success: true,
     message: 'Logged out successfully',
   });
+};
+
+// Verify email
+export const verifyEmail = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { token } = req.params;
+
+    const user = await User.findOne({
+      verificationToken: token,
+      verificationExpire: { $gt: new Date() },
+    });
+
+    if (!user) {
+      throw new AppError('Invalid or expired verification token', 400);
+    }
+
+    user.isVerified = true;
+    user.verificationToken = undefined;
+    user.verificationExpire = undefined;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Email verified successfully',
+    });
+  } catch (error) {
+    next(error);
+  }
 };

@@ -8,6 +8,7 @@ import {
   resetPassword,
   logout,
   handshakeRoute,
+  verifyEmail,
 } from '../controllers/authController';
 import { protect } from '../middleware/authMiddleware';
 import { validateRequest } from '../middleware/validateRequest';
@@ -230,5 +231,25 @@ router.put(
  *         description: Logged out successfully
  */
 router.get('/logout', logout);
+
+/**
+ * @swagger
+ * /auth/verify/{token}:
+ *   get:
+ *     summary: Verify email
+ *     tags: [Auth]
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Email verified successfully
+ *       400:
+ *         description: Invalid or expired token
+ */
+router.get('/verify/:token', verifyEmail);
 
 export { router as authRoutes };

@@ -87,7 +87,7 @@ const portfolioSchema = z.object({
   isGrid: z.boolean().default(false),
   title: z.string().min(1, 'Portfolio title is required'),
   description: z.string().optional(),
-  items: z.array(portfolioItemSchema).min(1, 'At least one portfolio item is required'),
+  items: z.array(portfolioItemSchema).optional().default([]),
 });
 
 

@@ -98,7 +98,7 @@ export const updateUser = async (
 
     // Update user
     const updatedUser = await User.findByIdAndUpdate(id, updateData, {
-      new: true,
+      returnDocument: 'after',
       runValidators: true,
     }).select('-password');
 

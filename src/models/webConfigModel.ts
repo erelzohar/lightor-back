@@ -240,16 +240,16 @@ const aboutSchema = new Schema<IAbout>({
 
 const portfolioItemSchema = new Schema<IPortfolioItem>({
   url: { type: String, required: true },
-  title: { type: String, required: true },
-  description: { type: String, required: true }
+  title: { type: String },
+  description: { type: String }
 }, { id: false });
 
 const portfolioSchema = new Schema<IPortfolio>({
   visible: { type: Boolean, required: true, default: true },
   isGrid: { type: Boolean, required: true, default: false },
   title: { type: String, required: true },
-  description: { type: String, required: true },
-  items: { type: [portfolioItemSchema], required: true }
+  description: { type: String },
+  items: { type: [portfolioItemSchema], default: [] }
 }, { id: false, _id: false });
 
 // const appointmentTypeSchema = new Schema<IAppointmentType>({

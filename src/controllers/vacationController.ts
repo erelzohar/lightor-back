@@ -57,7 +57,7 @@ export const updateVacation = async (
   next: NextFunction
 ) => {
   try {
-    const updated = await Vacation.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const updated = await Vacation.findByIdAndUpdate(req.params.id, req.body, { returnDocument: 'after' });
     if (!updated) {
       throw new AppError('Vacation not found', 404);
     }

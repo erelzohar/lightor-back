@@ -7,7 +7,17 @@ export interface IUser extends Document {
   phone: string;
   username: string;
   password: string;
-  subscription: string;
+  isVerified: boolean;
+  verificationToken?: string;
+  verificationExpire?: Date;
+  subscription: {
+    status: string;
+    planId?: string;
+    customerId?: string;
+    subscriptionId?: string;
+    nextBillDate?: Date;
+  };
+  role: string;
   webConfig_id?: mongoose.Types.ObjectId;
   defaultLanguage: string;
   createdAt: Date;
@@ -53,10 +63,31 @@ const userSchema = new Schema<IUser>(
       minlength: [6, 'Password must be at least 6 characters'],
       select: false,
     },
+    // --- VERIFICATION FIELDS ---
+    isVerified: {
+      type: Boolean,
+      default: false
+    },
+    verificationToken: String,
+    verificationExpire: Date,
+
+    // --- SUBSCRIPTION FIELDS ---
     subscription: {
+      status: { 
+        type: String, 
+        enum: ['free', 'active', 'past_due', 'canceled', 'deleted'], 
+        default: 'free' 
+      },
+      planId: String,         // Paddle Price ID (e.g., 'pri_123')
+      customerId: String,     // Paddle Customer ID (e.g., 'ctm_123')
+      subscriptionId: String, // Paddle Subscription ID (e.g., 'sub_123')
+      nextBillDate: Date,     // Next payment or expiration date
+    },
+
+    role: {
       type: String,
-      enum: ['free', 'basic', 'premium', 'admin', "client"],
-      default: 'free',
+      enum: ['admin', 'client', 'user'],
+      default: 'user',
     },
     webConfig_id: {
       type: mongoose.Schema.Types.ObjectId,

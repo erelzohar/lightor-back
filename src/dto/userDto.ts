@@ -16,7 +16,7 @@ export const registerUserSchema = z.object({
     ...userCommonSchema,
     password: z.string().min(6, 'Password must be at least 6 characters').regex(passwordRegex, 'Password must contain both letters and numbers'),
     confirmPassword: z.string().min(6, 'Confirm password must be at least 6 characters'),
-    subscription: z.enum(['free', 'basic', 'premium','admin',"client"]).optional().default('free'),
+    role: z.enum(['admin', 'client', 'user']).optional().default('user'),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: 'Passwords do not match',
@@ -40,7 +40,14 @@ export const updateUserSchema = z.object({
     phone: userCommonSchema.phone.optional(),
     username: userCommonSchema.username.optional(),
     defaultLanguage: userCommonSchema.defaultLanguage.optional(),
-    subscription: z.enum(['free', 'basic', 'premium','admin']).optional(),
+    subscription: z.object({
+      status: z.enum(['free', 'active', 'past_due', 'canceled', 'deleted']).optional(),
+      planId: z.string().optional(),
+      customerId: z.string().optional(),
+      subscriptionId: z.string().optional(),
+      nextBillDate: z.string().optional(),
+    }).optional(),
+    role: z.enum(['admin', 'client', 'user']).optional(),
   }),
 });
 

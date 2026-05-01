@@ -249,7 +249,7 @@ export const updateWebConfig = async (
     const updatedWebConfig = await WebConfig.findByIdAndUpdate(
       id,
       updateData,
-      { new: true, runValidators: false }
+      { returnDocument: 'after', runValidators: false }
     ).populate(['appointmentTypes', 'vacations']);
 
     res.status(200).json({
@@ -279,8 +279,8 @@ export const deleteWebConfig = async (
     }
 
     // Check if user is authorized to delete this web config
-    if (user && user.subscription !== 'admin') {
-      if (!webConfig.user_id.equals(user._id as string)) {
+    if (user && user.role !== 'admin') {
+      if (!webConfig.user_id.equals(user._id)) {
         throw new AppError('Not authorized to delete this web config', 403);
       }
     }
