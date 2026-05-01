@@ -15,7 +15,7 @@ async function completePastAppointments() {
 
         // 1. Fetch only 'scheduled' appointments
         // We populate 'type' to access durationMS using explicit model reference
-        const appointments = await Appointment.find({ status: 'scheduled', timestamp: { $lt: nowMs } })
+        const appointments = await Appointment.find({ status: 'scheduled', timestamp: { $lt: String(nowMs) } })
             .populate({ path: 'type', model: AppointmentType });
 
         const appointmentsToComplete: mongoose.Types.ObjectId[] = [];
