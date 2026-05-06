@@ -54,7 +54,7 @@ router.get('/:imageName', validateRequest(imageParamsSchema), getImage);
  */
 router.post('/',
     protect,
-    authorize('free', 'basic', 'premium', 'admin'),
+    authorize('user', 'admin'),
     validateRequest(uploadImageSchema),
     uploadImage
 );
@@ -81,7 +81,7 @@ router.post('/',
  */
 router.delete('/:imageName',
     protect,
-    authorize('free', 'basic', 'premium', 'admin'),
+    authorize('user', 'admin'),
     validateRequest(imageParamsSchema),
     deleteImage
 );

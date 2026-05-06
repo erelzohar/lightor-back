@@ -4,6 +4,7 @@ import { Appointment, IAppointment } from '../models/appointmentModel';
 import { AppointmentType } from '../models/appointmentTypeModel';
 import { config } from '../config/config';
 import { connectDB } from '../config/database';
+import { sendAppointmentConfirmation } from '../utils/notificationService';
 
 const QUEUE_NAME = 'appointmentQueue';
 
@@ -110,7 +111,14 @@ const processAppointmentCreation = async (job: Job<AppointmentJobData>): Promise
         status: 'scheduled',
     });
     const populatedAppointment = await newAppointment.populate('type');
-    delete populatedAppointment.type_id;
+    delete (populatedAppointment as any).type_id;
+
+    // 3. Send Notification
+    try {
+        await sendAppointmentConfirmation(newAppointment, false);
+    } catch (err) {
+        console.error('Failed to send appointment confirmation notification:', err);
+    }
 
     // --- End Core Business Logic ---
 

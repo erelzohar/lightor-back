@@ -14,14 +14,21 @@ const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{6,}$/;
 export const registerUserSchema = z.object({
   body: z.object({
     ...userCommonSchema,
+    subscription: z.object({
+      status: z.enum(['free', 'active', 'past_due', 'canceled', 'deleted']).optional(),
+      planId: z.string().optional(),
+      customerId: z.string().optional(),
+      subscriptionId: z.string().optional(),
+      nextBillDate: z.string().optional(),
+    }).optional(),
     password: z.string().min(6, 'Password must be at least 6 characters').regex(passwordRegex, 'Password must contain both letters and numbers'),
     confirmPassword: z.string().min(6, 'Confirm password must be at least 6 characters'),
     role: z.enum(['admin', 'client', 'user']).optional().default('user'),
   })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
-  }),
+    .refine((data) => data.password === data.confirmPassword, {
+      message: 'Passwords do not match',
+      path: ['confirmPassword'],
+    }),
 });
 
 // User login schema
@@ -58,10 +65,10 @@ export const changePasswordSchema = z.object({
     newPassword: z.string().min(6, 'New password must be at least 6 characters'),
     confirmNewPassword: z.string().min(6, 'Confirm new password must be at least 6 characters'),
   })
-  .refine((data) => data.newPassword === data.confirmNewPassword, {
-    message: 'New passwords do not match',
-    path: ['confirmNewPassword'],
-  }),
+    .refine((data) => data.newPassword === data.confirmNewPassword, {
+      message: 'New passwords do not match',
+      path: ['confirmNewPassword'],
+    }),
 });
 
 // Forgot password schema
@@ -77,10 +84,10 @@ export const resetPasswordSchema = z.object({
     password: z.string().min(6, 'Password must be at least 6 characters'),
     confirmPassword: z.string().min(6, 'Confirm password must be at least 6 characters'),
   })
-  .refine((data) => data.password === data.confirmPassword, {
-    message: 'Passwords do not match',
-    path: ['confirmPassword'],
-  }),
+    .refine((data) => data.password === data.confirmPassword, {
+      message: 'Passwords do not match',
+      path: ['confirmPassword'],
+    }),
   params: z.object({
     resetToken: z.string(),
   }),

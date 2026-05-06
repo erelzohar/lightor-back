@@ -115,6 +115,7 @@ export const register = async (
       phone: userData.phone,
       username: userData.username,
       password: userData.password,
+      subscription:userData.subscription,
       role: userData.role,
       defaultLanguage: userData.defaultLanguage,
       isVerified: false,
@@ -123,7 +124,7 @@ export const register = async (
     });
 
     // Send verification email
-    const frontendUrl = process.env.CLIENT_URL || 'https://lightor.app';
+    const frontendUrl = process.env.CLIENT_URL || 'https://register.lightor.app';
     const verifyUrl = `${frontendUrl}/verify?token=${verificationToken}`;
     
     const emailHtml = `
@@ -387,6 +388,35 @@ export const resetPassword = async (
       token,
       message: 'Password reset successful',
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Check username/email uniqueness for registration
+export const checkUniqueness = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { username, email } = req.query as { username?: string; email?: string };
+
+    if (!username && !email) {
+      throw new AppError('Provide at least one of: username, email', 400);
+    }
+
+    const conditions: object[] = [];
+    if (username) conditions.push({ username });
+    if (email) conditions.push({ email });
+
+    const existing = await User.findOne({ $or: conditions }).select('username email').lean();
+
+    const result: { username?: boolean; email?: boolean } = {};
+    if (username) result.username = existing?.username === username;
+    if (email) result.email = existing?.email === email;
+
+    res.status(200).json({ success: true, taken: result });
   } catch (error) {
     next(error);
   }

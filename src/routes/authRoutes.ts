@@ -9,6 +9,7 @@ import {
   logout,
   handshakeRoute,
   verifyEmail,
+  checkUniqueness,
 } from '../controllers/authController';
 import { protect } from '../middleware/authMiddleware';
 import { validateRequest } from '../middleware/validateRequest';
@@ -24,6 +25,8 @@ const router = express.Router();
 
 //client handshake route
 router.post('/handshake', handshakeRoute);
+
+router.get('/check-uniqueness', checkUniqueness);
 
 /**
  * @swagger

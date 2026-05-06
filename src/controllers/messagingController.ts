@@ -5,6 +5,7 @@ import { logger } from '../utils/logger';
 import Redis from 'ioredis';
 import crypto from 'crypto';
 import { reportFrontendError, sendGeneralEmail } from '../utils/emailService';
+import { sendSmsMessage, sendWhatsAppMessage } from '../utils/notificationService';
 
 const redis = new Redis(config.redis);
 
@@ -17,56 +18,6 @@ const getAttemptsKey = (phone: string) => `attempts:${phone}`;
 
 const generateOTP = (): string => {
   return crypto.randomInt(100000, 999999).toString();
-};
-
-const sendWhatsAppTemplateRequest = async (
-  to: string,
-  templateName: string,
-  languageCode: string,
-  components: any[]
-) => {
-  const waApiUrl = `https://graph.facebook.com/v22.0/${config.whatsapp.accountId}/messages`;
-
-  const response = await fetch(waApiUrl, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${config.whatsapp.accountToken}`,
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      messaging_product: "whatsapp",
-      to,
-      type: "template",
-      template: {
-        name: templateName,
-        language: {
-          code: languageCode
-        },
-        components: components
-      }
-    })
-  });
-
-  if (!response.ok) {
-    console.log(JSON.stringify({
-      messaging_product: "whatsapp",
-      to,
-      type: "template",
-      template: {
-        name: templateName,
-        language: {
-          code: languageCode
-        },
-        components: components
-      }
-    }));
-
-    console.log(await response.json());
-
-    throw new AppError('Failed to send WhatsApp template message', 500);
-  }
-
-  return response.json();
 };
 
 // Send SMS message
@@ -82,31 +33,7 @@ export const sendSMS = async (
       throw new AppError('Phone number and message are required', 400);
     }
 
-    const smsApiUrl = "https://my.textme.co.il/api/";
-    const response = await fetch(smsApiUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + config.smsService.newToken
-      },
-      body: JSON.stringify({
-        sms: {
-          user: {
-            username: config.smsService.newUser
-          },
-          source: "Lightor",
-          destinations: {
-            phone: to
-          },
-          message
-        }
-      })
-    });
-
-
-    if (!response.ok) {
-      throw new AppError('Failed to send SMS', 500);
-    }
+    await sendSmsMessage(to, message);
 
     logger.info(`SMS sent successfully to ${to}`);
 
@@ -152,28 +79,7 @@ export const sendOTP = async (req: Request, res: Response, next: NextFunction): 
 
     // C. SENDING LOGIC
     if (channelType === 'sms') {
-
-      const smsApiUrl = "https://my.textme.co.il/api/";
-      const response = await fetch(smsApiUrl, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer ' + config.smsService.newToken
-        },
-        body: JSON.stringify({
-          sms: {
-            user: {
-              username: config.smsService.newUser
-            },
-            source: "Lightor",
-            destinations: {
-              phone: phoneNumber
-            },
-            message
-          }
-        })
-      });
-      if (!response.ok) throw new AppError('SMS provider error', 500);
+      await sendSmsMessage(phoneNumber, message);
     } else {
       const components = [
         {
@@ -198,7 +104,7 @@ export const sendOTP = async (req: Request, res: Response, next: NextFunction): 
         }
       ];
 
-      await sendWhatsAppTemplateRequest(phoneNumber, "otp", "he", components);
+      await sendWhatsAppMessage(phoneNumber, '', { name: "otp", language: "he", components });
     }
 
     res.status(200).json({ success: true, message: `OTP sent via ${channelType}` });
@@ -272,27 +178,7 @@ export const sendWhatsAppText = async (
       throw new AppError('Phone number and message are required', 400);
     }
 
-    const waApiUrl = `https://graph.facebook.com/v22.0/${config.whatsapp.accountId}/messages`;
-
-    const response = await fetch(waApiUrl, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${config.whatsapp.accountToken}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        messaging_product: "whatsapp",
-        to,
-        type: "text",
-        text: {
-          body: message
-        }
-      })
-    });
-
-    if (!response.ok) {
-      throw new AppError('Failed to send WhatsApp message ' + response, 500);
-    }
+    await sendWhatsAppMessage(to, message);
 
     logger.info(`WhatsApp text message sent successfully to ${to}`);
 
@@ -321,7 +207,7 @@ export const sendWhatsAppTemplate = async (
       throw new AppError('Phone number, template name, code, and components are required', 400);
     }
 
-    await sendWhatsAppTemplateRequest(to, templateName, code, components);
+    await sendWhatsAppMessage(to, '', { name: templateName, language: code, components });
     res.status(200).json({
       success: true,
       message: 'WhatsApp template message sent successfully'

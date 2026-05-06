@@ -60,7 +60,7 @@ const router = express.Router();
  */
 router.post('/',
     protect,
-    authorize('free', 'basic', 'premium', 'admin'),
+    authorize('user', 'admin'),
     validateRequest(createVacationSchema),
     createVacation
 );
@@ -109,7 +109,7 @@ router.get('/:webConfigId', validateRequest(getVacationsByWebConfigIdSchema), ge
  */
 router.put('/:id',
     protect,
-    authorize('free', 'basic', 'premium', 'admin'),
+    authorize('user', 'admin'),
     validateRequest(updateVacationSchema),
     updateVacation
 );
@@ -133,7 +133,7 @@ router.put('/:id',
  */
 router.delete('/:id',
     protect,
-    authorize('free', 'basic', 'premium', 'admin'),
+    authorize('user', 'admin'),
     deleteVacation
 );
 

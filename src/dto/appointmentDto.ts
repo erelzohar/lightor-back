@@ -6,7 +6,8 @@ const appointmentCommonSchema = {
   type_id: z.string().min(1, 'Appointment type ID is required'),
   user_id: z.string().min(1, 'User ID is required'),
   phone: z.string().min(5, 'Phone number is required').max(20, 'Phone number is too long'),
-  timestamp: z.string().min(1, 'Timestamp is required')
+  timestamp: z.string().min(1, 'Timestamp is required'),
+  channelType: z.enum(['sms', 'whatsapp']).optional()
 };
 
 // Create appointment schema
@@ -23,6 +24,7 @@ export const updateAppointmentSchema = z.object({
     phone: appointmentCommonSchema.phone.optional(),
     timestamp: appointmentCommonSchema.timestamp.optional(),
     status: z.enum(['scheduled', 'cancelled', 'completed']).optional(),
+    channelType: appointmentCommonSchema.channelType
   }),
   params: z.object({
     id: z.string().min(1, 'Appointment ID is required'),

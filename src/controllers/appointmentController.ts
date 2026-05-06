@@ -8,6 +8,7 @@ import { AppError } from '../utils/appError';
 import { logger } from '../utils/logger';
 import { Job, WaitingError } from 'bullmq';
 import { appQueue, appointmentQueueEvents } from '../queue/appQueue';
+import { sendAppointmentConfirmation } from '../utils/notificationService';
 
 // import { 
 //   sendAppointmentConfirmation, 
@@ -280,6 +281,13 @@ export const updateAppointment = async (
 
     if (!updatedAppointment) {
       throw new AppError('Appointment not found', 404);
+    }
+
+    // Send Notification
+    try {
+      await sendAppointmentConfirmation(updatedAppointment, true);
+    } catch (err) {
+      logger.error('Failed to send appointment update notification:', err);
     }
 
     res.status(200).json({

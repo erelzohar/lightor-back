@@ -7,12 +7,13 @@ export interface IUser extends Document {
   phone: string;
   username: string;
   password: string;
+  boardingStatus: string;
   isVerified: boolean;
   verificationToken?: string;
   verificationExpire?: Date;
   subscription: {
     status: string;
-    planId?: string;
+    priceId?: string;
     customerId?: string;
     subscriptionId?: string;
     nextBillDate?: Date;
@@ -20,6 +21,7 @@ export interface IUser extends Document {
   role: string;
   webConfig_id?: mongoose.Types.ObjectId;
   defaultLanguage: string;
+  channelType: 'sms' | 'whatsapp';
   createdAt: Date;
   updatedAt: Date;
   matchPassword(enteredPassword: string): Promise<boolean>;
@@ -70,7 +72,11 @@ const userSchema = new Schema<IUser>(
     },
     verificationToken: String,
     verificationExpire: Date,
-
+    boardingStatus: {
+    type: String,
+    enum: ['new', 'onboarded', 'active'],
+    default: 'new'
+  },
     // --- SUBSCRIPTION FIELDS ---
     subscription: {
       status: { 
@@ -78,7 +84,7 @@ const userSchema = new Schema<IUser>(
         enum: ['free', 'active', 'past_due', 'canceled', 'deleted'], 
         default: 'free' 
       },
-      planId: String,         // Paddle Price ID (e.g., 'pri_123')
+      priceId: String,         // Paddle Price ID (e.g., 'pri_123')
       customerId: String,     // Paddle Customer ID (e.g., 'ctm_123')
       subscriptionId: String, // Paddle Subscription ID (e.g., 'sub_123')
       nextBillDate: Date,     // Next payment or expiration date
@@ -97,6 +103,11 @@ const userSchema = new Schema<IUser>(
       type: String,
       enum: ['en', 'he', 'ar', 'fr', 'es'],
       default: 'he',
+    },
+    channelType: {
+      type: String,
+      enum: ['sms', 'whatsapp'],
+      default: 'sms',
     },
   },
   {

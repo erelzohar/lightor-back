@@ -80,7 +80,7 @@ const router = express.Router();
 router.post(
   '/',
   protect,
-  authorize('free', 'basic', 'premium', 'admin'),
+  authorize('user', 'admin'),
   validateRequest(createWebConfigSchema),
   createWebConfig
 );
@@ -260,7 +260,7 @@ router.get('/check-subdomain/:subdomain',protect, checkSubdomainAvailability);
 router.put(
   '/:id',
   protect,
-  authorize('free', 'basic', 'premium', 'admin'),
+  authorize('user', 'admin'),
   validateRequest(getWebConfigByIdSchema),
   validateRequest(updateWebConfigSchema),
   updateWebConfig
@@ -289,7 +289,7 @@ router.put(
 router.delete(
   '/:id',
   protect,
-  authorize('free', 'basic', 'premium', 'admin'),
+  authorize('user', 'admin'),
   validateRequest(getWebConfigByIdSchema),
   deleteWebConfig
 );

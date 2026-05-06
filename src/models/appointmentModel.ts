@@ -12,6 +12,7 @@ export interface IAppointment extends Document {
   status: string;
   isMorningReminderSent?: boolean;
   isHourlyReminderSent?: boolean;
+  channelType: 'sms' | 'whatsapp';
   createdAt: Date;
   updatedAt: Date;
 }
@@ -59,6 +60,11 @@ const appointmentSchema = new Schema<IAppointment>(
     isHourlyReminderSent: {
       type: Boolean,
       default: false
+    },
+    channelType: {
+      type: String,
+      enum: ['sms', 'whatsapp'],
+      default: 'sms'
     }
   },
   {

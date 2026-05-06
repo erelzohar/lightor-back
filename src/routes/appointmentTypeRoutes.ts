@@ -46,7 +46,7 @@ const router = express.Router();
  */
 router.post('/',
   protect,
-  authorize('free', 'basic', 'premium', 'admin'),
+  authorize('user', 'admin'),
   createAppointmentType);
 
 /**
@@ -135,7 +135,7 @@ router.get('/:id',
  */
 router.put('/:id',
   protect,
-  authorize('free', 'basic', 'premium', 'admin'),
+  authorize('user', 'admin'),
   updateAppointmentType);
 
 /**
@@ -160,7 +160,7 @@ router.put('/:id',
  */
 router.delete('/:id',
   protect,
-  authorize('free', 'basic', 'premium', 'admin'),
+  authorize('user', 'admin'),
   deleteAppointmentType
 );
 
