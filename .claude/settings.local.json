@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\Dudi\\\\Documents\\\\lightor-back\" -Directory)",
+      "Bash(Select-Object Name)",
+      "Bash(Format-Table -AutoSize)",
+      "Bash(npm install *)",
+      "Bash(npx tsc *)",
+      "Bash(npm uninstall *)",
+      "Bash(ls \"c:\\\\Users\\\\Dudi\\\\Documents\\\\\" 2>&1)",
+      "Read(//c/Users/Dudi/**)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\Dudi\\\\Documents\\\\lightor-back\" -Directory -Name)"
+    ]
+  }
+}

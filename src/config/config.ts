@@ -38,6 +38,7 @@ const REDIS_HOST = process.env.REDIS_HOST || '';
 const REDIS_PORT = process.env.REDIS_PORT || 0;
 const REDIS_USER = process.env.REDIS_USER || '';
 const REDIS_PASS = process.env.REDIS_PASS || '';
+const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 
 // Environment validation
 function validateEnv(): void {
@@ -121,5 +122,8 @@ export const config = {
     windowMs: RATE_LIMIT_WINDOW_MS,
     maxRequests: RATE_LIMIT_MAX_REQUESTS
   },
-  logLevel: LOG_LEVEL
+  logLevel: LOG_LEVEL,
+  gemini: {
+    apiKey: GEMINI_API_KEY
+  }
 };

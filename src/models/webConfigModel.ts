@@ -43,6 +43,8 @@ interface INavbar {
   languageSwitcher: boolean;
 }
 
+type HeroBgType = 'default' | 'clouds' | 'fog' | 'waves' | 'clouds2' | 'topology' | 'trunk' | 'rings' | 'birds';
+
 // Hero component interface
 interface IHero {
   visible: boolean;
@@ -50,6 +52,7 @@ interface IHero {
   subtitle: string;
   description: string;
   heroImageSrc: string;
+  bgType: HeroBgType;
 }
 
 // About paragraphs interface
@@ -216,7 +219,8 @@ const heroSchema = new Schema<IHero>({
   title: { type: String, required: true },
   subtitle: { type: String, required: true },
   description: { type: String, required: true },
-  heroImageSrc: { type: String, required: true }
+  heroImageSrc: { type: String, required: true },
+  bgType: { type: String, enum: ['default', 'clouds', 'fog', 'waves', 'clouds2', 'topology', 'trunk', 'rings', 'birds'], required: true, default: 'default' }
 }, { id: false, _id: false });
 
 const aboutParagraphsSchema = new Schema<IAboutParagraphs>({

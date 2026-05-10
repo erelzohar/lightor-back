@@ -22,6 +22,7 @@ import { authRoutes } from './routes/authRoutes';
 import { messagingRoutes } from './routes/messagingRoutes';
 import { imageRoutes } from './routes/imageRoutes';
 import { vacationRoutes } from './routes/vacationsRoutes';
+import { aiRoutes } from './routes/aiRoutes';
 
 const app = express();
 
@@ -81,6 +82,7 @@ app.use('/api/web-configs', webConfigRoutes);
 app.use('/api/messaging', messagingRoutes);
 app.use('/api/images', imageRoutes);
 app.use('/api/vacations', vacationRoutes);
+app.use('/api/ai', aiRoutes);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
