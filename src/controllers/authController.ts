@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { User, IUser } from '../models/userModel';
+import { WebConfig } from '../models/webConfigModel';
 import { config } from '../config/config';
 import { AppError } from '../utils/appError';
 import { logger } from '../utils/logger';
@@ -9,6 +10,7 @@ import { sendGeneralEmail } from '../utils/emailService';
 import {
   LoginUserInput,
   RegisterUserInput,
+  OnboardUserInput,
   ForgotPasswordInput,
   ResetPasswordInput,
   ChangePasswordInput
@@ -163,6 +165,108 @@ export const register = async (
       success: true,
       token,
       data: userResponse,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+const cleanSubdomain = (raw: string): string =>
+  raw.toLowerCase().replace(/[^a-z0-9-]/g, '-').replace(/-+/g, '-').replace(/^-|-$/g, '');
+
+const findUniqueSubdomain = async (base: string): Promise<string> => {
+  let candidate = base;
+  let counter = 1;
+  while (await WebConfig.exists({ subDomain: candidate })) {
+    candidate = `${base}-${counter++}`;
+  }
+  return candidate;
+};
+
+// Onboard: register user + create webConfig atomically
+export const onboard = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { webConfig: webConfigData, ...userData }: OnboardUserInput = req.body;
+
+    const existingUser = await User.findOne({
+      $or: [{ email: userData.email }, { username: userData.username }],
+    });
+
+    if (existingUser) {
+      throw new AppError('User with that email or username already exists', 400);
+    }
+
+    const verificationToken = crypto.randomBytes(20).toString('hex');
+    const verificationExpire = new Date(Date.now() + 24 * 60 * 60 * 1000);
+
+    const user = await User.create({
+      name: userData.name,
+      email: userData.email,
+      phone: userData.phone,
+      username: userData.username,
+      password: userData.password,
+      defaultLanguage: userData.defaultLanguage,
+      channelType: userData.channelType,
+      role: 'user',
+      subscription: { status: 'free', nextBillDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) },
+      isVerified: false,
+      verificationToken,
+      verificationExpire,
+    });
+
+    const subDomain = await findUniqueSubdomain(cleanSubdomain(webConfigData.subDomain));
+
+    const webConfig = await WebConfig.create({
+      ...webConfigData,
+      subDomain,
+      user_id: user._id,
+    });
+
+    user.webConfig_id = webConfig._id as typeof user.webConfig_id;
+    await user.save({ validateBeforeSave: false });
+
+    const frontendUrl = process.env.CLIENT_URL || 'https://register.lightor.app';
+    const verifyUrl = `${frontendUrl}/verify?token=${verificationToken}`;
+    const emailHtml = `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
+        <h2>Verify Your Email</h2>
+        <p>Thank you for registering. Please click the link below to verify your email address:</p>
+        <p><a href="${verifyUrl}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Verify Email</a></p>
+        <p>Or copy and paste this link in your browser:</p>
+        <p><a href="${verifyUrl}">${verifyUrl}</a></p>
+        <p>This link will expire in 24 hours.</p>
+      </div>
+    `;
+    sendGeneralEmail(user.email, 'Verify your email address', emailHtml).catch(err => {
+      logger.error(`Failed to send verification email to ${user.email}:`, err);
+    });
+
+    const token = generateToken(user);
+
+    res.status(201).json({
+      success: true,
+      token,
+      data: {
+        user: {
+          _id: user._id,
+          name: user.name,
+          email: user.email,
+          phone: user.phone,
+          username: user.username,
+          role: user.role,
+          subscription: user.subscription,
+          defaultLanguage: user.defaultLanguage,
+          channelType: user.channelType,
+          boardingStatus: user.boardingStatus,
+          isVerified: user.isVerified,
+          webConfig_id: webConfig._id,
+        },
+        webConfig,
+      },
     });
   } catch (error) {
     next(error);

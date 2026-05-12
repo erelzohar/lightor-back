@@ -57,7 +57,7 @@ const userSchema = new Schema<IUser>(
       unique: true,
       trim: true,
       minlength: [3, 'Username must be at least 3 characters'],
-      maxlength: [20, 'Username cannot be more than 20 characters'],
+      maxlength: [35, 'Username cannot be more than 35 characters'],
     },
     password: {
       type: String,

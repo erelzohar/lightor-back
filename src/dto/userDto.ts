@@ -1,11 +1,12 @@
 import { z } from 'zod';
+import { createWebConfigSchema } from './webConfigDto';
 
 // Common user schema properties
 const userCommonSchema = {
   name: z.string().min(1, 'Name is required').max(50, 'Name cannot exceed 50 characters'),
   email: z.string().email('Invalid email address'),
   phone: z.string().min(5, 'Phone number is required').max(20, 'Phone number is too long'),
-  username: z.string().min(3, 'Username must be at least 3 characters').max(20, 'Username cannot exceed 20 characters'),
+  username: z.string().min(3, 'Username must be at least 3 characters').max(35, 'Username cannot exceed 35 characters'),
   defaultLanguage: z.enum(['en', 'he', 'ar', 'fr', 'es']).optional().default('en'),
 };
 
@@ -100,7 +101,22 @@ export const userIdParamSchema = z.object({
   }),
 });
 
+// Onboarding schema: register user + create webConfig in one request
+export const onboardUserSchema = z.object({
+  body: z.object({
+    name: z.string().min(1, 'Name is required').max(50, 'Name cannot exceed 50 characters'),
+    email: z.string().email('Invalid email address'),
+    phone: z.string().min(5, 'Phone number is required').max(20, 'Phone number is too long'),
+    username: z.string().min(3, 'Username must be at least 3 characters').max(35, 'Username cannot exceed 35 characters'),
+    password: z.string().min(6, 'Password must be at least 6 characters').regex(passwordRegex, 'Password must contain both letters and numbers'),
+    defaultLanguage: z.enum(['en', 'he', 'ar', 'fr', 'es']).optional().default('he'),
+    channelType: z.enum(['sms', 'whatsapp']).optional().default('sms'),
+    webConfig: createWebConfigSchema.shape.body.omit({ vacations: true, appointmentTypes: true }),
+  }),
+});
+
 export type RegisterUserInput = z.infer<typeof registerUserSchema>['body'];
+export type OnboardUserInput = z.infer<typeof onboardUserSchema>['body'];
 export type LoginUserInput = z.infer<typeof loginUserSchema>['body'];
 export type UpdateUserInput = z.infer<typeof updateUserSchema>['body'];
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>['body'];

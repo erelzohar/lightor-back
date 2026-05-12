@@ -1,6 +1,7 @@
 import express from 'express';
 import {
   register,
+  onboard,
   login,
   getCurrentUser,
   changePassword,
@@ -15,6 +16,7 @@ import { protect } from '../middleware/authMiddleware';
 import { validateRequest } from '../middleware/validateRequest';
 import {
   registerUserSchema,
+  onboardUserSchema,
   loginUserSchema,
   changePasswordSchema,
   forgotPasswordSchema,
@@ -73,6 +75,56 @@ router.get('/check-uniqueness', checkUniqueness);
  *         description: Validation error
  */
 router.post('/register', validateRequest(registerUserSchema), register);
+
+/**
+ * @swagger
+ * /auth/onboard:
+ *   post:
+ *     summary: Register a new user and create their webConfig in one request
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - email
+ *               - phone
+ *               - username
+ *               - password
+ *               - confirmPassword
+ *               - webConfig
+ *             properties:
+ *               name:
+ *                 type: string
+ *               email:
+ *                 type: string
+ *               phone:
+ *                 type: string
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               confirmPassword:
+ *                 type: string
+ *               defaultLanguage:
+ *                 type: string
+ *                 enum: [en, he, ar, fr, es]
+ *               channelType:
+ *                 type: string
+ *                 enum: [sms, whatsapp]
+ *               webConfig:
+ *                 type: object
+ *                 description: Full webConfig creation payload
+ *     responses:
+ *       201:
+ *         description: User and webConfig created. Subscription is always set to free until Paddle webhook arrives.
+ *       400:
+ *         description: Validation error or duplicate user
+ */
+router.post('/onboard', validateRequest(onboardUserSchema), onboard);
 
 /**
  * @swagger

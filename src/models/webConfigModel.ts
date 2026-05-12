@@ -43,7 +43,8 @@ interface INavbar {
   languageSwitcher: boolean;
 }
 
-type HeroBgType = 'default' | 'clouds' | 'fog' | 'waves' | 'clouds2' | 'topology' | 'trunk' | 'rings' | 'birds';
+type HeroBgType = 'gradient' | 'net' | 'clouds' | 'fog' | 'waves' | 'clouds2' | 'topology' | 'trunk' | 'rings' | 'birds';
+type HeroBordersType = 'round' | 'square';
 
 // Hero component interface
 interface IHero {
@@ -53,6 +54,7 @@ interface IHero {
   description: string;
   heroImageSrc: string;
   bgType: HeroBgType;
+  bordersType: HeroBordersType;
 }
 
 // About paragraphs interface
@@ -220,7 +222,8 @@ const heroSchema = new Schema<IHero>({
   subtitle: { type: String, required: true },
   description: { type: String, required: true },
   heroImageSrc: { type: String, required: true },
-  bgType: { type: String, enum: ['default', 'clouds', 'fog', 'waves', 'clouds2', 'topology', 'trunk', 'rings', 'birds'], required: true, default: 'default' }
+  bgType: { type: String, enum: ['gradient','net', 'clouds', 'fog', 'waves', 'clouds2', 'topology', 'trunk', 'rings', 'birds'], required: true, default: 'gradient' },
+  bordersType: { type: String, enum: ['round', 'square'], required: true, default: 'round' }
 }, { id: false, _id: false });
 
 const aboutParagraphsSchema = new Schema<IAboutParagraphs>({
@@ -291,7 +294,7 @@ const footerSchema = new Schema<IFooter>({
 
 const introPopupSchema = new Schema<IIntroPopup>({
   visible: { type: Boolean, required: true, default: false },
-  value: { type: String, required: true }
+  value: { type: String }
 }, { id: false, _id: false });
 
 const contactButtonSchema = new Schema<IContactButton>({

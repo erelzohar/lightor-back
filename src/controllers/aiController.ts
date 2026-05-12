@@ -17,8 +17,11 @@ STRICT RULES:
    - colorPrimary vs colorLightBg: ≥ 4.5:1. colorPrimaryDark vs colorDarkBg: ≥ 4.5:1.
    - NEVER use primary color for main body text.
 3. Language: Detect user language (use "he" for Hebrew, "es"-spansih,"fr"-french,"ar"-arabic, "en" otherwise). Write all copy in that language.
-4. Vibe-Based Background ("bgType"): Deeply analyze the business tone. Select the most impactful match from ONLY this list and diversify: [default, clouds, fog, waves, clouds2, topology, trunk, birds].
+4. Vibe-Based Background ("bgType"): Deeply analyze the business tone. Select the most impactful match from ONLY this list and diversify: [gradient, net, clouds, fog, waves, clouds2, topology, trunk, birds].
 5. Icons: For "about.features", use ONLY: Star, Award, Users, Sparkles, Hand, Shield, CheckCircle, Smile, Rocket, Globe, Calendar, Settings, Bell, Heart, MapPin, Phone, Mail, Clock.
+5b. Border Style ("bordersType"): Choose "round" or "square" — this controls the border-radius of the hero image and CTA button.
+   - If a logo is provided: analyze its shape — circular/rounded logo → "round", sharp/rectangular logo → "square".
+   - If no logo: infer from business vibe.
 6. Image Assets (STRICT FORBIDDEN LIST): 
    - NEVER invent or output not existing images or random hashes make sure its existing image url or hash.
    - Separation: logoImageName and heroImageSrc MUST be different URLs.
@@ -48,7 +51,7 @@ JSON SCHEMA:
   },
   "components": {
     "navbar": { "visible": true, "darkMode": true, "languageSwitcher": false },
-    "hero": { "visible": true, "title": "max 5 words", "subtitle": "max 6 words", "description": "", "heroImageSrc": "", "bgType": "default" },
+    "hero": { "visible": true, "title": "max 5 words", "subtitle": "max 6 words", "description": "", "heroImageSrc": "", "bgType": "", "bordersType": "round" },
     "about": {
       "visible": true, "title": "", "description": "",
       "paragraphs": { "intro": "", "mission": "" },

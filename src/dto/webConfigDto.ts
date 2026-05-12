@@ -43,7 +43,8 @@ const navbarSchema = z.object({
   languageSwitcher: z.boolean().default(true),
 });
 
-const heroBgTypeSchema = z.enum(['default', 'clouds', 'fog', 'waves', 'clouds2', 'topology', 'trunk', 'rings', 'birds']);
+const heroBgTypeSchema = z.enum(['gradient','net', 'clouds', 'fog', 'waves', 'clouds2', 'topology', 'trunk', 'rings', 'birds']);
+const heroBordersTypeSchema = z.enum(['round', 'square']);
 
 // Hero component schema
 const heroSchema = z.object({
@@ -52,7 +53,8 @@ const heroSchema = z.object({
   subtitle: z.string().min(1, 'Hero subtitle is required'),
   description: z.string().min(1, 'Hero description is required'),
   heroImageSrc: z.string().min(1, 'Hero image is required'),
-  bgType: heroBgTypeSchema.default('default'),
+  bgType: heroBgTypeSchema.default('gradient'),
+  bordersType: heroBordersTypeSchema.default('round'),
 });
 
 // About paragraphs schema
@@ -120,7 +122,7 @@ const footerSchema = z.object({
 // Intro popup schema
 const introPopupSchema = z.object({
   visible: z.boolean().default(false),
-  value: z.string().min(1, 'Intro popup value is required'),
+  value: z.string(),
 });
 
 // Contact button schema
