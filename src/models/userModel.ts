@@ -73,21 +73,24 @@ const userSchema = new Schema<IUser>(
     verificationToken: String,
     verificationExpire: Date,
     boardingStatus: {
-    type: String,
-    enum: ['new', 'onboarded', 'active'],
-    default: 'new'
-  },
+      type: String,
+      enum: ['new', 'onboarded', 'active'],
+      default: 'new'
+    },
     // --- SUBSCRIPTION FIELDS ---
     subscription: {
-      status: { 
-        type: String, 
-        enum: ['free', 'active', 'past_due', 'canceled', 'deleted'], 
-        default: 'free' 
+      status: {
+        type: String,
+        enum: ['free', 'active', 'past_due', 'canceled', 'deleted'],
+        default: 'free'
       },
       priceId: String,         // Paddle Price ID (e.g., 'pri_123')
       customerId: String,     // Paddle Customer ID (e.g., 'ctm_123')
       subscriptionId: String, // Paddle Subscription ID (e.g., 'sub_123')
-      nextBillDate: Date,     // Next payment or expiration date
+      nextBillDate: {
+        type: Date,
+        default: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+      },     // Next payment or expiration date
     },
 
     role: {

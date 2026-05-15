@@ -74,6 +74,17 @@ JSON SCHEMA:
 
 
 
+const EDIT_INSTRUCTION = `You are an expert web designer. The user will give you an existing website configuration JSON and a description of what they want changed.
+
+STRICT RULES:
+1. Return the COMPLETE updated config — every field must be present, not just the changed parts.
+2. Apply ONLY what the user asks. Do not touch unrelated fields.
+3. If the user provides a new image, use it for the field they reference (logo, hero, etc.).
+4. Follow all original schema constraints: valid hex colors, allowed icon names, allowed bgType values, workingDays format, etc.
+5. Allowed icons: Star, Award, Users, Sparkles, Hand, Shield, CheckCircle, Smile, Rocket, Globe, Calendar, Settings, Bell, Heart, MapPin, Phone, Mail, Clock
+6. Allowed bgType values: gradient, net, clouds, fog, waves, clouds2, topology, trunk, birds
+7. Output ONLY the raw JSON object. No markdown, no code blocks, no extra text.`;
+
 function cleanLLMResponse(raw: string): string {
   return raw
     .replace(/^```(?:json)?\s*/i, '')
@@ -121,6 +132,65 @@ export const onboardingChat = async (
       parsed = JSON.parse(cleaned);
     } catch {
       logger.error('Gemini returned non-JSON response', { raw });
+      throw new AppError('AI service returned an invalid response. Please try again.', 502);
+    }
+
+    res.status(200).json({ success: true, data: parsed });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const editWithAI = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { message, webConfig } = req.body;
+
+    if (!message || typeof message !== 'string' || !message.trim()) {
+      throw new AppError('message field is required', 400);
+    }
+    if (!webConfig) {
+      throw new AppError('webConfig field is required', 400);
+    }
+
+    let configObj: unknown;
+    try {
+      configObj = typeof webConfig === 'string' ? JSON.parse(webConfig) : webConfig;
+    } catch {
+      throw new AppError('webConfig must be a valid JSON object', 400);
+    }
+
+    const userMessage = `Current config:\n${JSON.stringify(configObj, null, 2)}\n\nUser request:\n${message.trim()}`;
+
+    let contents: Parameters<typeof ai.models.generateContent>[0]['contents'];
+
+    if (req.files?.image) {
+      const image = req.files.image as UploadedFile;
+      contents = [
+        { text: userMessage },
+        { inlineData: { mimeType: image.mimetype, data: image.data.toString('base64') } },
+      ];
+    } else {
+      contents = userMessage;
+    }
+
+    const result = await ai.models.generateContent({
+      model: 'gemini-2.0-flash',
+      contents,
+      config: { systemInstruction: EDIT_INSTRUCTION },
+    });
+
+    const raw = result.text ?? '';
+    const cleaned = cleanLLMResponse(raw);
+
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(cleaned);
+    } catch {
+      logger.error('Gemini returned non-JSON response for edit', { raw });
       throw new AppError('AI service returned an invalid response. Please try again.', 502);
     }
 

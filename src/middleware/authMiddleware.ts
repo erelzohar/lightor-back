@@ -29,8 +29,8 @@ export const protect = async (
     let token;
 
     // 1. Check if token exists in Cookies (Priority for Web)
-    if (req.cookies && req.cookies.a_t) {
-      token = req.cookies.a_t;
+    if (req.cookies && req.cookies._a_t) {
+      token = req.cookies._a_t;
     }
     // 2. Fallback: Check if token exists in Authorization header
     else if (

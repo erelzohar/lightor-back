@@ -71,7 +71,7 @@ export const handshakeRoute = async (req: Request, res: Response): Promise<void>
 
     // Generate token
     const token = generateToken(user);
-    res.cookie('a_t', token, { //auth_token
+    res.cookie('_a_t', token, { //auth_token
       httpOnly: true,     // Protects from JavaScript "fishing"
       secure: true,       // Ensures it only sends over HTTPS (Cloudflare handles this)
       sameSite: 'none',   // Required for cross-subdomain (dashboard.lightor.app)
