@@ -89,7 +89,7 @@ const userSchema = new Schema<IUser>(
       subscriptionId: String, // Paddle Subscription ID (e.g., 'sub_123')
       nextBillDate: {
         type: Date,
-        default: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+        default: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
       },     // Next payment or expiration date
     },
 
