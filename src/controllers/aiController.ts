@@ -17,6 +17,7 @@ STRICT RULES:
    - colorPrimary vs colorLightBg: ≥ 4.5:1. colorPrimaryDark vs colorDarkBg: ≥ 4.5:1.
    - NEVER use primary color for main body text.
 3. Language: Detect user language (use "he" for Hebrew, "es"-spansih,"fr"-french,"ar"-arabic, "en" otherwise). Write all copy in that language.
+3b. Working days: must be exactly 7 items array of null or "09:00-17:00" format , leave as is if didnt specified else.
 4. Vibe-Based Background ("bgType"): Deeply analyze the business tone. Select the most impactful match from ONLY this list and diversify: [gradient, net, clouds, fog, waves, clouds2, topology, trunk, birds].
 5. Icons: For "about.features", use ONLY: Star, Award, Users, Sparkles, Hand, Shield, CheckCircle, Smile, Rocket, Globe, Calendar, Settings, Bell, Heart, MapPin, Phone, Mail, Clock.
 5b. Border Style ("bordersType"): Choose "round" or "square" — this controls the border-radius of the hero image and CTA button.
@@ -178,7 +179,7 @@ export const editWithAI = async (
     }
 
     const result = await ai.models.generateContent({
-      model: 'gemini-2.0-flash',
+      model: 'gemini-3-flash-preview',
       contents,
       config: { systemInstruction: EDIT_INSTRUCTION },
     });

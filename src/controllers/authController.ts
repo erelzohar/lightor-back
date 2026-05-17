@@ -3,6 +3,8 @@ import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import { User, IUser } from '../models/userModel';
 import { WebConfig } from '../models/webConfigModel';
+import { processAndUploadLogo } from './imageController';
+import { UploadedFile } from 'express-fileupload';
 import { config } from '../config/config';
 import { AppError } from '../utils/appError';
 import { logger } from '../utils/logger';
@@ -13,8 +15,79 @@ import {
   OnboardUserInput,
   ForgotPasswordInput,
   ResetPasswordInput,
-  ChangePasswordInput
+  ChangePasswordInput,
+  ResendVerificationEmailInput,
 } from '../dto/userDto';
+
+type SupportedLanguage = 'en' | 'he' | 'ar' | 'fr' | 'es';
+
+const verificationEmailI18n: Record<SupportedLanguage, {
+  subject: string; heading: string; body: string;
+  button: string; orCopy: string; expiry: string; dir: 'ltr' | 'rtl';
+}> = {
+  en: {
+    subject: 'Verify your email address',
+    heading: 'Verify Your Email',
+    body: 'Thank you for registering. Please click the link below to verify your email address:',
+    button: 'Verify Email',
+    orCopy: 'Or copy and paste this link in your browser:',
+    expiry: 'This link will expire in 24 hours.',
+    dir: 'ltr',
+  },
+  he: {
+    subject: 'אמת את כתובת האימייל שלך',
+    heading: 'אימות כתובת האימייל',
+    body: 'תודה שנרשמת. אנא לחץ על הקישור הבא כדי לאמת את כתובת האימייל שלך:',
+    button: 'אמת אימייל',
+    orCopy: 'או העתק והדבק את הקישור הזה בדפדפן שלך:',
+    expiry: 'קישור זה יפוג בעוד 24 שעות.',
+    dir: 'rtl',
+  },
+  ar: {
+    subject: 'تحقق من عنوان بريدك الإلكتروني',
+    heading: 'تحقق من بريدك الإلكتروني',
+    body: 'شكراً لتسجيلك. يرجى النقر على الرابط أدناه للتحقق من عنوان بريدك الإلكتروني:',
+    button: 'تحقق من البريد الإلكتروني',
+    orCopy: 'أو انسخ والصق هذا الرابط في متصفحك:',
+    expiry: 'ستنتهي صلاحية هذا الرابط خلال 24 ساعة.',
+    dir: 'rtl',
+  },
+  fr: {
+    subject: 'Vérifiez votre adresse e-mail',
+    heading: 'Vérifiez votre e-mail',
+    body: 'Merci de vous être inscrit. Veuillez cliquer sur le lien ci-dessous pour vérifier votre adresse e-mail :',
+    button: "Vérifier l'e-mail",
+    orCopy: 'Ou copiez et collez ce lien dans votre navigateur :',
+    expiry: 'Ce lien expirera dans 24 heures.',
+    dir: 'ltr',
+  },
+  es: {
+    subject: 'Verifica tu dirección de correo electrónico',
+    heading: 'Verifica tu correo electrónico',
+    body: 'Gracias por registrarte. Por favor, haz clic en el enlace a continuación para verificar tu dirección de correo electrónico:',
+    button: 'Verificar correo electrónico',
+    orCopy: 'O copia y pega este enlace en tu navegador:',
+    expiry: 'Este enlace expirará en 24 horas.',
+    dir: 'ltr',
+  },
+};
+
+const buildVerificationEmail = (verifyUrl: string, language?: string): { subject: string; html: string } => {
+  const t = verificationEmailI18n[(language as SupportedLanguage) ?? 'en'] ?? verificationEmailI18n.en;
+  return {
+    subject: t.subject,
+    html: `
+      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; direction: ${t.dir}; text-align: ${t.dir === 'rtl' ? 'right' : 'left'};">
+        <h2>${t.heading}</h2>
+        <p>${t.body}</p>
+        <p><a href="${verifyUrl}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">${t.button}</a></p>
+        <p>${t.orCopy}</p>
+        <p><a href="${verifyUrl}">${verifyUrl}</a></p>
+        <p>${t.expiry}</p>
+      </div>
+    `,
+  };
+};
 
 // Generate JWT token
 const generateToken = (user: IUser, staySignedIn: boolean = false): string => {
@@ -117,7 +190,7 @@ export const register = async (
       phone: userData.phone,
       username: userData.username,
       password: userData.password,
-      subscription:userData.subscription,
+      subscription: userData.subscription,
       role: userData.role,
       defaultLanguage: userData.defaultLanguage,
       isVerified: false,
@@ -125,23 +198,11 @@ export const register = async (
       verificationExpire,
     });
 
-    // Send verification email
-    const frontendUrl = process.env.CLIENT_URL || 'https://register.lightor.app';
+    const frontendUrl = config.dashboard.url || 'https://dashboard.lightor.app';
     const verifyUrl = `${frontendUrl}/verify?token=${verificationToken}`;
-    
-    const emailHtml = `
-      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-        <h2>Verify Your Email</h2>
-        <p>Thank you for registering. Please click the link below to verify your email address:</p>
-        <p><a href="${verifyUrl}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Verify Email</a></p>
-        <p>Or copy and paste this link in your browser:</p>
-        <p><a href="${verifyUrl}">${verifyUrl}</a></p>
-        <p>This link will expire in 24 hours.</p>
-      </div>
-    `;
-    
-    // We send email without blocking the response
-    sendGeneralEmail(user.email, 'Verify your email address', emailHtml).catch(err => {
+    const { subject: verifySubject, html: verifyHtml } = buildVerificationEmail(verifyUrl, userData.defaultLanguage);
+
+    sendGeneralEmail(user.email, verifySubject, verifyHtml).catch(err => {
       logger.error(`Failed to send verification email to ${user.email}:`, err);
     });
 
@@ -220,8 +281,17 @@ export const onboard = async (
 
     const subDomain = await findUniqueSubdomain(cleanSubdomain(webConfigData.subDomain));
 
+    let logoImageName = webConfigData.logoImageName;
+    if (req.files?.logo) {
+      logoImageName = await processAndUploadLogo(req.files.logo as UploadedFile);
+    }
+    if (!logoImageName) {
+      throw new AppError('Logo image is required', 400);
+    }
+
     const webConfig = await WebConfig.create({
       ...webConfigData,
+      logoImageName,
       subDomain,
       user_id: user._id,
     });
@@ -229,19 +299,10 @@ export const onboard = async (
     user.webConfig_id = webConfig._id as typeof user.webConfig_id;
     await user.save({ validateBeforeSave: false });
 
-    const frontendUrl = process.env.CLIENT_URL || 'https://register.lightor.app';
+    const frontendUrl = config.dashboard.url || 'https://dashboard.lightor.app';
     const verifyUrl = `${frontendUrl}/verify?token=${verificationToken}`;
-    const emailHtml = `
-      <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #333;">
-        <h2>Verify Your Email</h2>
-        <p>Thank you for registering. Please click the link below to verify your email address:</p>
-        <p><a href="${verifyUrl}" style="display: inline-block; padding: 10px 20px; background-color: #007bff; color: #fff; text-decoration: none; border-radius: 5px;">Verify Email</a></p>
-        <p>Or copy and paste this link in your browser:</p>
-        <p><a href="${verifyUrl}">${verifyUrl}</a></p>
-        <p>This link will expire in 24 hours.</p>
-      </div>
-    `;
-    sendGeneralEmail(user.email, 'Verify your email address', emailHtml).catch(err => {
+    const { subject: verifySubject, html: verifyHtml } = buildVerificationEmail(verifyUrl, userData.defaultLanguage);
+    sendGeneralEmail(user.email, verifySubject, verifyHtml).catch(err => {
       logger.error(`Failed to send verification email to ${user.email}:`, err);
     });
 
@@ -298,7 +359,7 @@ export const login = async (
 
     // Generate token
     const token = generateToken(user);
-    
+
     res.status(200).json({
       success: true,
       token,
@@ -526,6 +587,46 @@ export const checkUniqueness = async (
   }
 };
 
+// Resend verification email
+export const resendVerificationEmail = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const { email }: ResendVerificationEmailInput = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user || user.isVerified) {
+      res.status(200).json({
+        success: true,
+        message: 'If a user with that email exists and is unverified, a new verification email has been sent.',
+      });
+      return;
+    }
+
+    user.verificationToken = crypto.randomBytes(20).toString('hex');
+    user.verificationExpire = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    await user.save({ validateBeforeSave: false });
+
+    const frontendUrl = config.dashboard.url || 'https://dashboard.lightor.app';
+    const verifyUrl = `${frontendUrl}/verify?token=${user.verificationToken}`;
+    const { subject, html } = buildVerificationEmail(verifyUrl, user.defaultLanguage);
+
+    sendGeneralEmail(user.email, subject, html).catch(err => {
+      logger.error(`Failed to resend verification email to ${user.email}:`, err);
+    });
+
+    res.status(200).json({
+      success: true,
+      message: 'If a user with that email exists and is unverified, a new verification email has been sent.',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // Logout user (client-side only)
 export const logout = (req: Request, res: Response): void => {
   res.status(200).json({
@@ -542,7 +643,8 @@ export const verifyEmail = async (
 ): Promise<void> => {
   try {
     const { token } = req.params;
-
+    console.log(token);
+    
     const user = await User.findOne({
       verificationToken: token,
       verificationExpire: { $gt: new Date() },

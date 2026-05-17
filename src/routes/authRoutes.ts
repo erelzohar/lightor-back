@@ -11,6 +11,7 @@ import {
   handshakeRoute,
   verifyEmail,
   checkUniqueness,
+  resendVerificationEmail,
 } from '../controllers/authController';
 import { protect } from '../middleware/authMiddleware';
 import { validateRequest } from '../middleware/validateRequest';
@@ -21,6 +22,7 @@ import {
   changePasswordSchema,
   forgotPasswordSchema,
   resetPasswordSchema,
+  resendVerificationEmailSchema,
 } from '../dto/userDto';
 
 const router = express.Router();
@@ -286,6 +288,29 @@ router.put(
  *         description: Logged out successfully
  */
 router.get('/logout', logout);
+
+/**
+ * @swagger
+ * /auth/resend-verification:
+ *   post:
+ *     summary: Resend email verification link
+ *     tags: [Auth]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Verification email sent if user exists and is unverified
+ */
+router.post('/resend-verification', validateRequest(resendVerificationEmailSchema), resendVerificationEmail);
 
 /**
  * @swagger

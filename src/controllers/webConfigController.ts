@@ -10,8 +10,9 @@ import {
   WebConfigIdParam,
   WebConfigSubdomainParam
 } from '../dto/webConfigDto';
-import { deleteImage } from './imageController';
+import { processAndUploadLogo } from './imageController';
 import { DeleteObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import { UploadedFile } from 'express-fileupload';
 import { config } from '../config/config';
 
 // Create web config
@@ -38,6 +39,10 @@ export const createWebConfig = async (
     const userWebConfig = await WebConfig.findOne({ user_id: user._id });
     if (userWebConfig) {
       throw new AppError('User already has a web config', 400);
+    }
+
+    if (req.files?.logo) {
+      webConfigData.logoImageName = await processAndUploadLogo(req.files.logo as UploadedFile);
     }
 
     // Create web config
@@ -172,6 +177,21 @@ export const getWebConfigBySubdomain = async (
       throw new AppError('Web config not found', 404);
     }
 
+    const owner = await User.findById(webConfig.user_id).select('isVerified subscription');
+
+    if (!owner) {
+      throw new AppError('Web config owner not found', 404);
+    }
+
+    if (!owner.isVerified) {
+      throw new AppError('This business account is not verified', 403);
+    }
+
+    const status = owner.subscription?.status;
+    if (status !== 'free' && status !== 'active') {
+      throw new AppError('This business does not have an active subscription', 403);
+    }
+
     res.status(200).json({
       success: true,
       data: webConfig,
@@ -230,19 +250,10 @@ export const updateWebConfig = async (
       }
     }
 
-    if (updateData.logoImageName) {
-      const command = new DeleteObjectCommand({
-        Bucket: config.aws.bucketName,
-        Key: webConfig.logoImageName
-      });
-      const s3 = new S3Client({
-        // credentials: {
-        //   accessKeyId: config.aws.accessKey,
-        //   secretAccessKey: config.aws.secret
-        // },
-        region: config.aws.region
-      });
-      await s3.send(command);
+    if (req.files?.logo) {
+      const s3 = new S3Client({ region: config.aws.region });
+      await s3.send(new DeleteObjectCommand({ Bucket: config.aws.bucketName, Key: webConfig.logoImageName }));
+      updateData.logoImageName = await processAndUploadLogo(req.files.logo as UploadedFile);
     }
 
     // Update web config

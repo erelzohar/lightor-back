@@ -94,6 +94,13 @@ export const resetPasswordSchema = z.object({
   }),
 });
 
+// Resend verification email schema
+export const resendVerificationEmailSchema = z.object({
+  body: z.object({
+    email: z.string().email('Invalid email address'),
+  }),
+});
+
 // User ID parameter schema
 export const userIdParamSchema = z.object({
   params: z.object({
@@ -111,10 +118,12 @@ export const onboardUserSchema = z.object({
     password: z.string().min(6, 'Password must be at least 6 characters').regex(passwordRegex, 'Password must contain both letters and numbers'),
     defaultLanguage: z.enum(['en', 'he', 'ar', 'fr', 'es']).optional().default('he'),
     channelType: z.enum(['sms', 'whatsapp']).optional().default('sms'),
-    webConfig: createWebConfigSchema.shape.body.omit({ vacations: true, appointmentTypes: true }),
+    webConfig: createWebConfigSchema.shape.body
+      .extend({ logoImageName: z.string().min(3).optional() }),
   }),
 });
 
+export type ResendVerificationEmailInput = z.infer<typeof resendVerificationEmailSchema>['body'];
 export type RegisterUserInput = z.infer<typeof registerUserSchema>['body'];
 export type OnboardUserInput = z.infer<typeof onboardUserSchema>['body'];
 export type LoginUserInput = z.infer<typeof loginUserSchema>['body'];

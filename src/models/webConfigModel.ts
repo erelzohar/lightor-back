@@ -181,7 +181,7 @@ export interface IWebConfig extends Document {
 const addressSchema = new Schema<IAddress>({
   state: { type: String, required: true },
   city: { type: String, required: true },
-  street: { type: String, required: true },
+  street: { type: String, required: false },
   other: { type: String }
 }, { id: false, _id: false });
 
@@ -373,7 +373,7 @@ const webConfigSchema = new Schema<IWebConfig>(
     // },
     address: {
       type: addressSchema,
-      required: true
+      required: false
     },
     contact: {
       type: contactSchema,

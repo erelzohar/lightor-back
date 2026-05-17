@@ -5,6 +5,7 @@ dotenv.config();
 
 const MONGO_USERNAME = process.env.MONGO_USERNAME || '';
 const MONGO_PASSWORD = process.env.MONGO_PASSWORD || '';
+const DASHBOARD_URL = process.env.DASHBOARD_URL || '';
 const CLIENT_USER = process.env.CLIENT_USER || '';
 const CLIENT_PASS = process.env.CLIENT_PASS || '';  
 const MONGO_URL = `mongodb+srv://${MONGO_USERNAME}:${MONGO_PASSWORD}@cluster2.btio2te.mongodb.net/Lightor${process.env.NODE_ENV !== 'production' ? '-test' : ''}`;
@@ -74,6 +75,9 @@ export const config = {
   server: {
     port: PORT,
     nodeEnv: NODE_ENV
+  },
+  dashboard:{
+    url:DASHBOARD_URL
   },
   client: {
     user: CLIENT_USER,

@@ -46,6 +46,15 @@ export const createAppointment = async (
       throw new AppError('User not found', 404);
     }
 
+    if (!user.isVerified) {
+      throw new AppError('This business account is not verified', 403);
+    }
+
+    const status = user.subscription?.status;
+    if (status !== 'free' && status !== 'active') {
+      throw new AppError('This business does not have an active subscription', 403);
+    }
+
     //      Validate appointment type
     const appointmentType = await AppointmentType.findById(req.body.type_id);
     if (!appointmentType) {
@@ -70,27 +79,6 @@ export const createAppointment = async (
     });
 
   } catch (error: unknown) {
-    // let statusCode = 500;
-    // let message = 'An unexpected error occurred during appointment creation.';
-
-    // // Type checking the error for specific BullMQ issues
-    // if (error instanceof WaitingError) {
-    //   statusCode = 503;
-    //   message = 'Appointment processing timed out or failed to connect to queue events.';
-    // } else if (error instanceof Error) {
-    //   // Catches errors thrown intentionally by the worker (like the conflict error)
-    //   message = error.message;
-
-    //   if (error.message.includes('conflict')) {
-    //     statusCode = 409;
-      
-    //   }
-    // }
-
-    // res.status(statusCode).json({
-    //   success: false,
-    //   message: message,
-    // });    
     next(error);
   }
 };

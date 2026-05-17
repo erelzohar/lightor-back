@@ -50,6 +50,25 @@ export const getImage = async (
 };
 
 
+export const processAndUploadLogo = async (file: UploadedFile): Promise<string> => {
+  const imageName = new Date().getTime().toString() + randomUUID() + '.webp';
+
+  const buffer = await sharp(file.data)
+    .resize(700, 700, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
+    .toFormat('webp')
+    .webp({ quality: 60 })
+    .toBuffer();
+
+  await s3.send(new PutObjectCommand({
+    Bucket: config.aws.bucketName,
+    Key: imageName,
+    Body: buffer,
+    ContentType: 'image/webp',
+  }));
+
+  return imageName;
+};
+
 // Upload image to S3
 export const uploadImage = async (
   req: Request,

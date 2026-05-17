@@ -4,7 +4,7 @@ import { z } from 'zod';
 const addressSchema = z.object({
   state: z.string().min(1, 'State is required'),
   city: z.string().min(1, 'City is required'),
-  street: z.string().min(1, 'Street is required'),
+  street: z.string().optional(),
   other: z.string().nullable().optional(),
 });
 
@@ -157,14 +157,14 @@ export const createWebConfigSchema = z.object({
   body: z.object({
     businessName: z.string().min(1, 'Business name is required'),
     logoImageName: z.string().min(3, 'Logo image name is invalid'),
-    vacations: z.array(z.string()),
-    appointmentTypes: z.array(z.string()),//.min(1, 'At least one appointment type is required'),
+    // vacations: z.array(z.string()),
+    // appointmentTypes: z.array(z.string()),//.min(1, 'At least one appointment type is required'),
     subDomain: z.string().min(1, 'Subdomain is required').toLowerCase(),
     minCancelTimeMS: z.number().min(0).default(3600000),
     // minsPerSlot: z.number().min(5, 'Minimum minutes per appointment must be at least 5'),
     defaultLanguage: z.enum(['en', 'he', 'ar', 'fr', 'es']).default('he'),
     workingDays: z.array(z.string().nullable()).length(7, 'Must provide 7 entries for working days'),
-    address: addressSchema,
+    address: addressSchema.optional(),
     contact: contactSchema,
     social: socialSchema,
     pallete: palleteSchema,
@@ -180,8 +180,8 @@ export const updateWebConfigSchema = z.object({
     subDomain: z.string().min(1, 'Subdomain is required').toLowerCase().optional(),
     minCancelTimeMS: z.number().min(0).optional(),
     // minsPerSlot: z.number().min(5).optional(),
-    vacations: z.array(z.string()).optional(),
-    appointmentTypes: z.array(z.string()).optional(),//.min(1, 'At least one appointment type is required'),
+    // vacations: z.array(z.string()).optional(),
+    // appointmentTypes: z.array(z.string()).optional(),//.min(1, 'At least one appointment type is required'),
     defaultLanguage: z.enum(['en', 'he', 'ar', 'fr', 'es']).optional(),
     workingDays: z.array(z.string().nullable()).length(7, 'Must provide 7 entries for working days').optional(),
     address: addressSchema.partial().optional(),
